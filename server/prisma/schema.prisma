@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  role          String    @default("USER")
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile           UserProfile?
+  eligibilityChecks EligibilityCheck[]
+  checklists        Checklist[]
+  savedInvestments  SavedInvestment[]
+  chatConversations ChatConversation[]
+}
+
+model UserProfile {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  countryOfResidence    String
+  residencyStatus       String
+  investmentObjectives  String[]
+  riskPreference        String
+  investmentAmountRange String
+  repatriationPreference String
+  existingBanking       String[]
+  completedOnboarding   Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model InvestmentCategory {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  description     String?
+  riskLevel       String?
+  liquidity       String?
+  repatriation    String?
+  taxComplexity   String?
+  accountRequirements String?
+  officialSources String[]
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rules EligibilityRule[]
+}
+
+model EligibilityRule {
+  id               String   @id @default(uuid())
+  ruleId           String   @unique
+  categoryId       String
+  category         InvestmentCategory @relation(fields: [categoryId], references: [id])
+  jurisdiction     String
+  investorCategory String
+  conditions       Json
+  outcome          String
+  explanation      String
+  conditionsDetail String?
+  exceptions       String?
+  accountType      String?
+  documentation    String?
+  repatriation     String?
+  taxConsiderations String?
+  sourceUrl        String?
+  sourceName       String?
+  effectiveDate    DateTime?
+  lastVerified     DateTime?
+  reviewStatus     String
+  version          Int      @default(1)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([jurisdiction, investorCategory])
+  @@index([ruleId])
+}
+
+model RegulatorySource {
+  id          String   @id @default(uuid())
+  name        String
+  url         String   @unique
+  type        String
+  country     String
+  lastChecked DateTime?
+  isReliable  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model EligibilityCheck {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId      String?
+  category        InvestmentCategory? @relation(fields: [categoryId], references: [id])
+  countryOfResidence String
+  residencyStatus String
+  investmentAmount String?
+  repatriationPreference String?
+  overallOutcome  String
+  summary         String?
+  createdAt       DateTime @default(now())
+
+  results EligibilityResult[]
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model EligibilityResult {
+  id               String   @id @default(uuid())
+  checkId          String
+  check            EligibilityCheck @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  ruleId           String?
+  category         String
+  outcome          String
+  explanation      String
+  conditions       String?
+  exceptions       String?
+  accountType      String?
+  documentation    String?
+  repatriation     String?
+  taxConsiderations String?
+  sourceUrl        String?
+  sourceName       String?
+  effectiveDate    DateTime?
+  lastVerified     DateTime?
+  reviewStatus     String
+  version          Int
+  isIllustrative   Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  @@index([checkId])
+}
+
+model Checklist {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  category    String?
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items ChecklistItem[]
+  @@index([userId])
+}
+
+model ChecklistItem {
+  id          String   @id @default(uuid())
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  isRequired  Boolean  @default(false)
+  isConditional Boolean @default(true)
+  isCompleted Boolean  @default(false)
+  category    String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model SavedInvestment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    InvestmentCategory @relation(fields: [categoryId], references: [id])
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+model RegulatoryUpdate {
+  id          String   @id @default(uuid())
+  title       String
+  summary     String
+  sourceUrl   String?
+  publishedAt DateTime @default(now())
+  isActive    Boolean  @default(true)
+}
+
+model ChatConversation {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  messages ChatMessage[]
+  @@index([userId])
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  conversationId String
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role        String
+  content     String
+  sources     String[]
+  createdAt   DateTime @default(now())
+}
+
+model RuleVersionHistory {
+  id            String   @id @default(uuid())
+  ruleId        String
+  field         String
+  oldValue      String?
+  newValue      String?
+  changedBy     String?
+  changedAt     DateTime @default(now())
+  rule          EligibilityRule? @relation(fields: [ruleId], references: [ruleId])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  entity      String
+  entityId    String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
