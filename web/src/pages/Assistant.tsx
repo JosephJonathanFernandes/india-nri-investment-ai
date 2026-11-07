@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Navbar } from '@/components/layout/Navbar';
@@ -18,7 +25,9 @@ const EXAMPLE_QUESTIONS = [
 export default function Assistant() {
   const { user, profile } = useAuth();
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Array<{ role: string; content: string; sources?: string[] }>>([]);
+  const [messages, setMessages] = useState<
+    Array<{ role: string; content: string; sources?: string[] }>
+  >([]);
   [user]; // keep reference
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,9 +56,20 @@ export default function Assistant() {
         conversationId,
       });
       setConversationId(res.conversationId);
-      setMessages((prev) => [...prev, { role: 'ASSISTANT', content: res.answer, sources: res.sources }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'ASSISTANT', content: res.answer, sources: res.sources },
+      ]);
     } catch (err: any) {
-      setMessages((prev) => [...prev, { role: 'ASSISTANT', content: err.message || 'I could not generate a response. Please consult a qualified professional.' }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'ASSISTANT',
+          content:
+            err.message ||
+            'I could not generate a response. Please consult a qualified professional.',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -98,9 +118,12 @@ export default function Assistant() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-navy-900 dark:text-white">Ask Your NRI Investment Assistant</h1>
+            <h1 className="text-2xl font-bold text-navy-900 dark:text-white">
+              Ask Your NRI Investment Assistant
+            </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Get plain-language answers about Indian investment rules. Your profile: {profile.countryOfResidence} · {profile.residencyStatus}.
+              Get plain-language answers about Indian investment rules. Your profile:{' '}
+              {profile.countryOfResidence} · {profile.residencyStatus}.
             </p>
           </div>
           <div className="flex gap-2">
@@ -113,7 +136,9 @@ export default function Assistant() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Examples sidebar */}
           <div className="lg:col-span-4 space-y-4">
-            <div className="text-sm font-semibold text-navy-900 dark:text-white mb-2">Try asking</div>
+            <div className="text-sm font-semibold text-navy-900 dark:text-white mb-2">
+              Try asking
+            </div>
             <div className="space-y-2">
               {EXAMPLE_QUESTIONS.map((q) => (
                 <button
@@ -131,7 +156,9 @@ export default function Assistant() {
               ))}
             </div>
             <div className="p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-navy-800 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-              The assistant distinguishes regulatory eligibility from tax advice, cites official sources where available, and recommends consulting a qualified professional for complex cases.
+              The assistant distinguishes regulatory eligibility from tax advice, cites official
+              sources where available, and recommends consulting a qualified professional for
+              complex cases.
             </div>
           </div>
 
@@ -140,9 +167,13 @@ export default function Assistant() {
             <Card className="flex-1 flex flex-col overflow-hidden border-gray-200 dark:border-white/10">
               <CardHeader className="p-4 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-navy-800">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">A</div>
+                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">
+                    A
+                  </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-navy-900 dark:text-white">NRI Investment Assistant</div>
+                    <div className="font-semibold text-navy-900 dark:text-white">
+                      NRI Investment Assistant
+                    </div>
                     <div className="text-xs text-gray-500">Educational guidance · RAG-enabled</div>
                   </div>
                 </div>
@@ -155,22 +186,36 @@ export default function Assistant() {
                   </div>
                 )}
                 {messages.map((m, i) => (
-                  <div key={i} className={m.role === 'USER' ? 'flex justify-end' : 'flex justify-start'}>
-                    <div className={cn(
-                      'max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed shadow-sm',
-                      m.role === 'USER'
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-white dark:bg-navy-800 text-navy-900 dark:text-white border border-gray-100 dark:border-white/10'
-                    )}>
+                  <div
+                    key={i}
+                    className={m.role === 'USER' ? 'flex justify-end' : 'flex justify-start'}
+                  >
+                    <div
+                      className={cn(
+                        'max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed shadow-sm',
+                        m.role === 'USER'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white dark:bg-navy-800 text-navy-900 dark:text-white border border-gray-100 dark:border-white/10'
+                      )}
+                    >
                       {m.content}
                       {m.role === 'ASSISTANT' && m.sources?.length && (
                         <div className="mt-2 pt-2 border-t border-gray-200 dark:border-white/10">
-                          <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Sources</div>
+                          <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">
+                            Sources
+                          </div>
                           <ul className="text-xs space-y-1">
                             {m.sources.map((s, si) => (
                               <li key={si} className="flex items-center gap-1">
                                 <span className="text-emerald-600 dark:text-emerald-400">→</span>
-                                <a href={s} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline break-all">{s}</a>
+                                <a
+                                  href={s}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 dark:text-blue-400 hover:underline break-all"
+                                >
+                                  {s}
+                                </a>
                               </li>
                             ))}
                           </ul>
@@ -206,7 +251,8 @@ export default function Assistant() {
         </div>
 
         <p className="text-center mt-8 text-xs text-gray-500 dark:text-gray-500">
-          Educational guidance only — not professional legal, tax, or investment advice. The assistant may not have access to all current regulations.
+          Educational guidance only — not professional legal, tax, or investment advice. The
+          assistant may not have access to all current regulations.
         </p>
       </div>
     </div>

@@ -4,21 +4,64 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ChevronLeft, ChevronRight, CheckCircle2, User, MapPin, Target, ShieldAlert, Building2, Home, HelpCircle } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  User,
+  MapPin,
+  Target,
+  ShieldAlert,
+  Building2,
+  Home,
+  HelpCircle,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Navbar } from '@/components/layout/Navbar';
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-const COUNTRIES = ['United States', 'United Kingdom', 'United Arab Emirates', 'Canada', 'Australia', 'Singapore', 'Other'];
+const COUNTRIES = [
+  'United States',
+  'United Kingdom',
+  'United Arab Emirates',
+  'Canada',
+  'Australia',
+  'Singapore',
+  'Other',
+];
 const RESIDENCY_STATUS = ['NRI', 'OCI', 'Other / unsure'];
-const OBJECTIVES = ['Long-term wealth creation', 'Retirement planning', 'Regular income', 'Capital preservation', 'Diversification'];
+const OBJECTIVES = [
+  'Long-term wealth creation',
+  'Retirement planning',
+  'Regular income',
+  'Capital preservation',
+  'Diversification',
+];
 const RISK = ['Conservative', 'Moderate', 'Aggressive'];
-const AMOUNTS = ['Less than ₹5 lakh', '₹5 lakh – ₹25 lakh', '₹25 lakh – ₹1 crore', '₹1 crore – ₹5 crore', 'More than ₹5 crore'];
-const REPATRIATION = ['Prefer full repatriation where legally permitted', 'Partial repatriation', 'No immediate repatriation requirement', 'Unsure'];
+const AMOUNTS = [
+  'Less than ₹5 lakh',
+  '₹5 lakh – ₹25 lakh',
+  '₹25 lakh – ₹1 crore',
+  '₹1 crore – ₹5 crore',
+  'More than ₹5 crore',
+];
+const REPATRIATION = [
+  'Prefer full repatriation where legally permitted',
+  'Partial repatriation',
+  'No immediate repatriation requirement',
+  'Unsure',
+];
 const BANKING = ['NRE account', 'NRO account', 'FCNR deposit', 'None', 'Unsure'];
 
 const STEPS: Record<Step, { title: string; desc: string }> = {
@@ -72,34 +115,42 @@ export default function Onboarding() {
     setErrors((prev) => ({ ...prev, [key]: '' }));
   };
 
-  const validateStep = useCallback((s: Step): boolean => {
-    const e: Record<string, string> = {};
-    switch (s) {
-      case 1:
-        if (!form.countryOfResidence) e.countryOfResidence = 'Please select your country of residence.';
-        break;
-      case 2:
-        if (!form.residencyStatus) e.residencyStatus = 'Please select your residency status.';
-        break;
-      case 3:
-        if (!form.investmentObjectives?.length) e.investmentObjectives = 'Please select at least one objective.';
-        break;
-      case 4:
-        if (!form.riskPreference) e.riskPreference = 'Please select a risk preference.';
-        break;
-      case 5:
-        if (!form.investmentAmountRange) e.investmentAmountRange = 'Please select an investment amount range.';
-        break;
-      case 6:
-        if (!form.repatriationPreference) e.repatriationPreference = 'Please select a repatriation preference.';
-        break;
-      case 7:
-        if (!form.existingBanking?.length) e.existingBanking = 'Please select at least one option.';
-        break;
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }, [form]);
+  const validateStep = useCallback(
+    (s: Step): boolean => {
+      const e: Record<string, string> = {};
+      switch (s) {
+        case 1:
+          if (!form.countryOfResidence)
+            e.countryOfResidence = 'Please select your country of residence.';
+          break;
+        case 2:
+          if (!form.residencyStatus) e.residencyStatus = 'Please select your residency status.';
+          break;
+        case 3:
+          if (!form.investmentObjectives?.length)
+            e.investmentObjectives = 'Please select at least one objective.';
+          break;
+        case 4:
+          if (!form.riskPreference) e.riskPreference = 'Please select a risk preference.';
+          break;
+        case 5:
+          if (!form.investmentAmountRange)
+            e.investmentAmountRange = 'Please select an investment amount range.';
+          break;
+        case 6:
+          if (!form.repatriationPreference)
+            e.repatriationPreference = 'Please select a repatriation preference.';
+          break;
+        case 7:
+          if (!form.existingBanking?.length)
+            e.existingBanking = 'Please select at least one option.';
+          break;
+      }
+      setErrors(e);
+      return Object.keys(e).length === 0;
+    },
+    [form]
+  );
 
   const next = () => {
     if (validateStep(step)) {
@@ -138,11 +189,16 @@ export default function Onboarding() {
           {/* Progress */}
           <div className="p-6 border-b border-gray-200 dark:border-white/10">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-navy-900 dark:text-white">Step {step} of 8</span>
+              <span className="text-sm font-medium text-navy-900 dark:text-white">
+                Step {step} of 8
+              </span>
               <span className="text-xs text-muted-foreground">{current.title}</span>
             </div>
             <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
-              <div className={`h-full bg-emerald-600 transition-all duration-500`} style={{ width: `${progress}%` }} />
+              <div
+                className={`h-full bg-emerald-600 transition-all duration-500`}
+                style={{ width: `${progress}%` }}
+              />
             </div>
             <p className="text-xs text-muted-foreground mt-2">{current.desc}</p>
           </div>
@@ -160,14 +216,20 @@ export default function Onboarding() {
                   error={errors.countryOfResidence}
                 >
                   <option value="">Select a country</option>
-                  {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {COUNTRIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </Select>
               </>
             )}
             {step === 2 && (
               <>
                 <CardTitle className="text-xl">Residency & identity</CardTitle>
-                <CardDescription>We never request identity documents or sensitive credentials.</CardDescription>
+                <CardDescription>
+                  We never request identity documents or sensitive credentials.
+                </CardDescription>
                 <Select
                   label="Residency status"
                   value={form.residencyStatus}
@@ -175,9 +237,15 @@ export default function Onboarding() {
                   error={errors.residencyStatus}
                 >
                   <option value="">Select your status</option>
-                  {RESIDENCY_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {RESIDENCY_STATUS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
                 </Select>
-                <p className="text-xs text-muted-foreground">NRI = Non-Resident Indian · OCI = Overseas Citizen of India</p>
+                <p className="text-xs text-muted-foreground">
+                  NRI = Non-Resident Indian · OCI = Overseas Citizen of India
+                </p>
               </>
             )}
             {step === 3 && (
@@ -197,12 +265,23 @@ export default function Onboarding() {
                           : 'border-gray-200 dark:border-white/20 text-navy-900 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10'
                       )}
                     >
-                      <CheckCircle2 className={cn('w-4 h-4', form.investmentObjectives.includes(o) ? 'text-emerald-600' : 'text-gray-300')} />
+                      <CheckCircle2
+                        className={cn(
+                          'w-4 h-4',
+                          form.investmentObjectives.includes(o)
+                            ? 'text-emerald-600'
+                            : 'text-gray-300'
+                        )}
+                      />
                       {o}
                     </button>
                   ))}
                 </div>
-                {errors.investmentObjectives && <p className="text-sm text-red-600 dark:text-red-400">{errors.investmentObjectives}</p>}
+                {errors.investmentObjectives && (
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {errors.investmentObjectives}
+                  </p>
+                )}
               </>
             )}
             {step === 4 && (
@@ -223,7 +302,9 @@ export default function Onboarding() {
                       )}
                     >
                       <span>{r}</span>
-                      {form.riskPreference === r && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                      {form.riskPreference === r && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -240,14 +321,20 @@ export default function Onboarding() {
                   error={errors.investmentAmountRange}
                 >
                   <option value="">Select a range</option>
-                  {AMOUNTS.map((a) => <option key={a} value={a}>{a}</option>)}
+                  {AMOUNTS.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
                 </Select>
               </>
             )}
             {step === 6 && (
               <>
                 <CardTitle className="text-xl">Repatriation preference</CardTitle>
-                <CardDescription>Whether you want to move proceeds back to your country of residence.</CardDescription>
+                <CardDescription>
+                  Whether you want to move proceeds back to your country of residence.
+                </CardDescription>
                 <div className="grid grid-cols-1 gap-3">
                   {REPATRIATION.map((r) => (
                     <button
@@ -262,7 +349,9 @@ export default function Onboarding() {
                       )}
                     >
                       <span>{r}</span>
-                      {form.repatriationPreference === r && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                      {form.repatriationPreference === r && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -285,7 +374,12 @@ export default function Onboarding() {
                           : 'border-gray-200 dark:border-white/20 text-navy-900 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10'
                       )}
                     >
-                      <Building2 className={cn('w-4 h-4', form.existingBanking.includes(b) ? 'text-emerald-600' : 'text-gray-300')} />
+                      <Building2
+                        className={cn(
+                          'w-4 h-4',
+                          form.existingBanking.includes(b) ? 'text-emerald-600' : 'text-gray-300'
+                        )}
+                      />
                       {b}
                     </button>
                   ))}
@@ -295,7 +389,9 @@ export default function Onboarding() {
             {step === 8 && (
               <>
                 <CardTitle className="text-xl">Profile summary</CardTitle>
-                <CardDescription>Review your details. You can edit them later in Settings.</CardDescription>
+                <CardDescription>
+                  Review your details. You can edit them later in Settings.
+                </CardDescription>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between border-b border-gray-100 dark:border-white/10 pb-2">
                     <span className="text-gray-600 dark:text-gray-400">Country of residence</span>
@@ -307,7 +403,9 @@ export default function Onboarding() {
                   </div>
                   <div className="flex justify-between border-b border-gray-100 dark:border-white/10 pb-2">
                     <span className="text-gray-600 dark:text-gray-400">Objectives</span>
-                    <span className="text-navy-900 dark:text-white">{form.investmentObjectives.join(', ') || '—'}</span>
+                    <span className="text-navy-900 dark:text-white">
+                      {form.investmentObjectives.join(', ') || '—'}
+                    </span>
                   </div>
                   <div className="flex justify-between border-b border-gray-100 dark:border-white/10 pb-2">
                     <span className="text-gray-600 dark:text-gray-400">Risk preference</span>
@@ -315,18 +413,27 @@ export default function Onboarding() {
                   </div>
                   <div className="flex justify-between border-b border-gray-100 dark:border-white/10 pb-2">
                     <span className="text-gray-600 dark:text-gray-400">Investment amount</span>
-                    <span className="text-navy-900 dark:text-white">{form.investmentAmountRange}</span>
+                    <span className="text-navy-900 dark:text-white">
+                      {form.investmentAmountRange}
+                    </span>
                   </div>
                   <div className="flex justify-between border-b border-gray-100 dark:border-white/10 pb-2">
                     <span className="text-gray-600 dark:text-gray-400">Repatriation</span>
-                    <span className="text-navy-900 dark:text-white">{form.repatriationPreference}</span>
+                    <span className="text-navy-900 dark:text-white">
+                      {form.repatriationPreference}
+                    </span>
                   </div>
                   <div className="flex justify-between border-b border-gray-100 dark:border-white/10 pb-2">
                     <span className="text-gray-600 dark:text-gray-400">Existing banking</span>
-                    <span className="text-navy-900 dark:text-white">{form.existingBanking.join(', ') || 'None'}</span>
+                    <span className="text-navy-900 dark:text-white">
+                      {form.existingBanking.join(', ') || 'None'}
+                    </span>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-4">This information is used to personalize eligibility checks and is never shared with third parties.</p>
+                <p className="text-xs text-muted-foreground mt-4">
+                  This information is used to personalize eligibility checks and is never shared
+                  with third parties.
+                </p>
               </>
             )}
           </CardContent>

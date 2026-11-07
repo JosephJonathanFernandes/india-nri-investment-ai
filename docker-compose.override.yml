@@ -1,0 +1,46 @@
+# Docker Compose override for local development
+# Use this for hot-reload development: docker compose -f docker-compose.yml -f docker-compose.override.yml up
+
+version: "3.8"
+
+services:
+  db:
+    # Keep the same postgres image for dev
+    image: postgres:15-alpine
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npx tsx src/seed.ts && npx tsx watch src/index.ts"
+    environment:
+      DATABASE_URL: "postgresql://nri_user:nri_password@db:5432/nri_investment_simplifier?schema=public"
+      NODE_ENV: development
+      PORT: 4000
+      FRONTEND_URL: http://localhost:5173
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}
+      JWT_ACCESS_EXPIRY: 15m
+      JWT_REFRESH_EXPIRY: 7d
+      COOKIE_SECURE: "false"
+      COOKIE_SAME_SITE: Lax
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 100
+      ADMIN_EMAIL: admin@nrisimplifier.local
+      ADMIN_PASSWORD: AdminChangeMe123!
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      NODE_ENV: development
+      VITE_API_BASE: http://localhost:4000

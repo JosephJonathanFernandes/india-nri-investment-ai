@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +44,10 @@ export default function Checklist() {
     if (!newTitle.trim()) return;
     setLoading(true);
     try {
-      const res: any = await api.post('/checklists', { title: newTitle.trim(), category: 'NRI Investment' });
+      const res: any = await api.post('/checklists', {
+        title: newTitle.trim(),
+        category: 'NRI Investment',
+      });
       setChecklists([...checklists, res.checklist]);
       setNewTitle('');
       setActiveId(res.checklist.id);
@@ -94,16 +104,50 @@ export default function Checklist() {
     } catch {}
   };
 
-  const completion = items.length ? Math.round((items.filter((i: any) => i.isCompleted).length / items.length) * 100) : 0;
+  const completion = items.length
+    ? Math.round((items.filter((i: any) => i.isCompleted).length / items.length) * 100)
+    : 0;
 
   const defaultItems = [
-    { title: 'PAN card', desc: 'Permanent Account Number required for most Indian investments.', required: true },
-    { title: 'Passport & overseas address proof', desc: 'Valid passport and proof of address in your country of residence.', required: true },
-    { title: 'KYC registration', desc: 'SEBI-registered intermediary KYC (KRA) verification.', required: true },
-    { title: 'NRE / NRO bank account', desc: 'Repatriable (NRE) or non-repatriable (NRO) account for funds.', required: false, conditional: true },
-    { title: 'NRI-compatible brokerage & demat', desc: 'Broker that accepts NRI clients and offers demat account.', required: false, conditional: true },
-    { title: 'FATCA / CRS declaration', desc: 'Tax residency declaration where applicable (e.g. US persons).', required: false, conditional: true },
-    { title: 'Bank / broker-specific forms', desc: 'Account opening forms, PIS letter (equity, where applicable).', required: false, conditional: true },
+    {
+      title: 'PAN card',
+      desc: 'Permanent Account Number required for most Indian investments.',
+      required: true,
+    },
+    {
+      title: 'Passport & overseas address proof',
+      desc: 'Valid passport and proof of address in your country of residence.',
+      required: true,
+    },
+    {
+      title: 'KYC registration',
+      desc: 'SEBI-registered intermediary KYC (KRA) verification.',
+      required: true,
+    },
+    {
+      title: 'NRE / NRO bank account',
+      desc: 'Repatriable (NRE) or non-repatriable (NRO) account for funds.',
+      required: false,
+      conditional: true,
+    },
+    {
+      title: 'NRI-compatible brokerage & demat',
+      desc: 'Broker that accepts NRI clients and offers demat account.',
+      required: false,
+      conditional: true,
+    },
+    {
+      title: 'FATCA / CRS declaration',
+      desc: 'Tax residency declaration where applicable (e.g. US persons).',
+      required: false,
+      conditional: true,
+    },
+    {
+      title: 'Bank / broker-specific forms',
+      desc: 'Account opening forms, PIS letter (equity, where applicable).',
+      required: false,
+      conditional: true,
+    },
   ];
 
   return (
@@ -112,9 +156,12 @@ export default function Checklist() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-navy-900 dark:text-white">Account & Document Checklist</h1>
+            <h1 className="text-2xl font-bold text-navy-900 dark:text-white">
+              Account & Document Checklist
+            </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Conditional checklist of documents and steps for different NRI investment routes. Mark items complete and save progress.
+              Conditional checklist of documents and steps for different NRI investment routes. Mark
+              items complete and save progress.
             </p>
           </div>
           <div className="flex gap-3">
@@ -125,7 +172,9 @@ export default function Checklist() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">{error}</div>
+          <div className="mb-4 p-3 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+            {error}
+          </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -137,19 +186,35 @@ export default function Checklist() {
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <form onSubmit={createList} className="space-y-2 mb-4">
-                  <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Checklist name" className="text-sm" />
-                  <Button type="submit" variant="emerald" size="sm" className="w-full" disabled={loading || !newTitle.trim()}>
+                  <Input
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="Checklist name"
+                    className="text-sm"
+                  />
+                  <Button
+                    type="submit"
+                    variant="emerald"
+                    size="sm"
+                    className="w-full"
+                    disabled={loading || !newTitle.trim()}
+                  >
                     {loading ? 'Creating...' : 'Create'}
                   </Button>
                 </form>
                 <div className="space-y-2">
                   {checklists.length === 0 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">No checklists yet.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                      No checklists yet.
+                    </p>
                   )}
                   {checklists.map((c) => (
                     <button
                       key={c.id}
-                      onClick={() => { setActiveId(c.id); setError(null); }}
+                      onClick={() => {
+                        setActiveId(c.id);
+                        setError(null);
+                      }}
                       className={cn(
                         'w-full text-left px-3 py-2 rounded-lg border text-sm transition-colors',
                         activeId === c.id
@@ -158,7 +223,14 @@ export default function Checklist() {
                       )}
                     >
                       <FileText className="w-4 h-4 mr-2 text-gray-400" /> {c.title}
-                      <button onClick={(e) => { e.stopPropagation(); deleteList(c.id); }} className="ml-auto opacity-0 group-hover:opacity-100 text-red-500" aria-label="Delete">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteList(c.id);
+                        }}
+                        className="ml-auto opacity-0 group-hover:opacity-100 text-red-500"
+                        aria-label="Delete"
+                      >
                         <AlertTriangle className="w-3 h-3" />
                       </button>
                     </button>
@@ -175,8 +247,12 @@ export default function Checklist() {
                 <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center mb-3 text-gray-400">
                   <FileText className="w-6 h-6" />
                 </div>
-                <h3 className="font-semibold text-navy-900 dark:text-white mb-2">Select or create a checklist</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Checklists show conditional documents based on your investment route.</p>
+                <h3 className="font-semibold text-navy-900 dark:text-white mb-2">
+                  Select or create a checklist
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Checklists show conditional documents based on your investment route.
+                </p>
               </div>
             ) : (
               <Card>
@@ -188,7 +264,9 @@ export default function Checklist() {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Badge variant={completion === 100 ? 'eligible' : 'insufficient'}>{completion}%</Badge>
+                    <Badge variant={completion === 100 ? 'eligible' : 'insufficient'}>
+                      {completion}%
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="p-5 pt-0">
@@ -200,7 +278,10 @@ export default function Checklist() {
                     )}
                     <div className="divide-y divide-gray-100 dark:divide-white/10">
                       {items.map((item: any) => (
-                        <div key={item.id} className="p-4 flex items-start gap-3 group hover:bg-gray-50 dark:hover:bg-white/5">
+                        <div
+                          key={item.id}
+                          className="p-4 flex items-start gap-3 group hover:bg-gray-50 dark:hover:bg-white/5"
+                        >
                           <input
                             type="checkbox"
                             checked={item.isCompleted}
@@ -208,36 +289,55 @@ export default function Checklist() {
                             className="mt-1 w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 dark:bg-navy-800 dark:border-white/20"
                           />
                           <div className="flex-1">
-                            <div className={`flex items-center gap-2 text-sm ${item.isCompleted ? 'text-gray-400 line-through' : 'text-navy-900 dark:text-white'}`}>
+                            <div
+                              className={`flex items-center gap-2 text-sm ${item.isCompleted ? 'text-gray-400 line-through' : 'text-navy-900 dark:text-white'}`}
+                            >
                               {item.title}
                               {item.isConditional && (
-                                <Badge variant="insufficient" className="text-[10px] ml-1">Conditional</Badge>
+                                <Badge variant="insufficient" className="text-[10px] ml-1">
+                                  Conditional
+                                </Badge>
                               )}
                             </div>
                             {item.description && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.description}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                {item.description}
+                              </p>
                             )}
                           </div>
-                          <button onClick={() => deleteItem(item.id)} className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700" aria-label="Delete item">
+                          <button
+                            onClick={() => deleteItem(item.id)}
+                            className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700"
+                            aria-label="Delete item"
+                          >
                             <AlertTriangle className="w-4 h-4" />
                           </button>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <form onSubmit={addItem} className="mt-6 pt-6 border-t border-gray-200 dark:border-white/10 flex gap-2">
+                  <form
+                    onSubmit={addItem}
+                    className="mt-6 pt-6 border-t border-gray-200 dark:border-white/10 flex gap-2"
+                  >
                     <Input
                       value={newItem}
                       onChange={(e) => setNewItem(e.target.value)}
                       placeholder="Add a checklist item…"
                       className="flex-1 text-sm"
                     />
-                    <Button type="submit" variant="emerald" size="sm" disabled={!newItem.trim() || !activeId}>
+                    <Button
+                      type="submit"
+                      variant="emerald"
+                      size="sm"
+                      disabled={!newItem.trim() || !activeId}
+                    >
                       <Plus className="w-4 h-4" /> Add
                     </Button>
                   </form>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                    Items marked "Conditional" are not universally mandatory — they apply to specific investment routes.
+                    Items marked "Conditional" are not universally mandatory — they apply to
+                    specific investment routes.
                   </p>
                 </CardContent>
               </Card>
@@ -246,7 +346,8 @@ export default function Checklist() {
         </div>
 
         <p className="text-center mt-10 text-xs text-gray-500 dark:text-gray-500">
-          Educational guidance only — document requirements vary by bank, broker, and country. Confirm with your chosen intermediary.
+          Educational guidance only — document requirements vary by bank, broker, and country.
+          Confirm with your chosen intermediary.
         </p>
       </div>
     </div>

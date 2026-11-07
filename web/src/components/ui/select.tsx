@@ -10,7 +10,9 @@ type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
 function Select({ className, label, helperText, error, id, ...props }: SelectProps) {
   return (
     <div className="w-full space-y-1">
-      {label && <label className="text-sm font-medium text-navy-900 dark:text-white">{label}</label>}
+      {label && (
+        <label className="text-sm font-medium text-navy-900 dark:text-white">{label}</label>
+      )}
       <select
         id={id}
         className={cn(

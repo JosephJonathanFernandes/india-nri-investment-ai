@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { db, type StoreChecklist } from '../db';
 import { validate, apiError } from '../middleware/validation';
-import { requireAuth, requireOwnershipOrAdmin, AuthRequest } from '../middleware/auth';
+import { requireAuth, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
@@ -100,6 +100,21 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res) => {
   res.json({ ok: true });
 });
 
+/** GET /api/checklists/:id/items */
+router.get('/:id/items', requireAuth, async (req: AuthRequest, res) => {
+  const list = await db.findChecklistById(req.params.id);
+  if (!list) {
+    apiError(res, 404, 'not_found', 'Checklist not found.');
+    return;
+  }
+  if (req.user!.role !== 'ADMIN' && list.userId !== req.user!.userId) {
+    apiError(res, 403, 'forbidden', 'You can only access your own checklists.');
+    return;
+  }
+  const items = await db.listChecklistItems(req.params.id);
+  res.json({ items });
+});
+
 /** POST /api/checklists/:id/items */
 router.post('/:id/items', requireAuth, validate(itemSchema), async (req: AuthRequest, res) => {
   const list = await db.findChecklistById(req.params.id);
@@ -126,23 +141,28 @@ router.post('/:id/items', requireAuth, validate(itemSchema), async (req: AuthReq
 });
 
 /** PUT /api/checklists/:id/items/:itemId */
-router.put('/:id/items/:itemId', requireAuth, validate(updateItemSchema), async (req: AuthRequest, res) => {
-  const list = await db.findChecklistById(req.params.id);
-  if (!list) {
-    apiError(res, 404, 'not_found', 'Checklist not found.');
-    return;
+router.put(
+  '/:id/items/:itemId',
+  requireAuth,
+  validate(updateItemSchema),
+  async (req: AuthRequest, res) => {
+    const list = await db.findChecklistById(req.params.id);
+    if (!list) {
+      apiError(res, 404, 'not_found', 'Checklist not found.');
+      return;
+    }
+    if (req.user!.role !== 'ADMIN' && list.userId !== req.user!.userId) {
+      apiError(res, 403, 'forbidden', 'You can only access your own checklists.');
+      return;
+    }
+    const item = await db.updateChecklistItem(req.params.itemId, req.body);
+    if (!item) {
+      apiError(res, 404, 'not_found', 'Checklist item not found.');
+      return;
+    }
+    res.json({ item });
   }
-  if (req.user!.role !== 'ADMIN' && list.userId !== req.user!.userId) {
-    apiError(res, 403, 'forbidden', 'You can only access your own checklists.');
-    return;
-  }
-  const item = await db.updateChecklistItem(req.params.itemId, req.body);
-  if (!item) {
-    apiError(res, 404, 'not_found', 'Checklist item not found.');
-    return;
-  }
-  res.json({ item });
-});
+);
 
 /** DELETE /api/checklists/:id/items/:itemId */
 router.delete('/:id/items/:itemId', requireAuth, async (req: AuthRequest, res) => {

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../auth';
-import { db } from '../db';
+
 
 export interface AuthRequest extends Request {
   user?: { userId: string; email: string; role: string };
@@ -13,12 +13,17 @@ export interface AuthRequest extends Request {
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction): void {
   const token = extractToken(req);
   if (!token) {
-    res.status(401).json({ error: 'authentication_required', message: 'Please sign in to continue.' });
+    res
+      .status(401)
+      .json({ error: 'authentication_required', message: 'Please sign in to continue.' });
     return;
   }
   const payload = verifyAccessToken(token);
   if (!payload) {
-    res.status(401).json({ error: 'invalid_token', message: 'Session expired or invalid. Please sign in again.' });
+    res.status(401).json({
+      error: 'invalid_token',
+      message: 'Session expired or invalid. Please sign in again.',
+    });
     return;
   }
   req.user = { userId: payload.userId, email: payload.email, role: payload.role };
@@ -27,7 +32,10 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
 
 export function optionalAuth(req: AuthRequest, res: Response, next: NextFunction): void {
   const token = extractToken(req);
-  if (!token) { next(); return; }
+  if (!token) {
+    next();
+    return;
+  }
   const payload = verifyAccessToken(token);
   if (payload) req.user = { userId: payload.userId, email: payload.email, role: payload.role };
   next();
@@ -63,9 +71,14 @@ export function requireOwnershipOrAdmin(req: AuthRequest, res: Response, next: N
     return;
   }
   const target = req.params.userId || req.body?.userId;
-  if (req.user.role === 'ADMIN') { next(); return; }
+  if (req.user.role === 'ADMIN') {
+    next();
+    return;
+  }
   if (target && target !== req.user.userId) {
-    res.status(403).json({ error: 'forbidden', message: 'You can only access your own resources.' });
+    res
+      .status(403)
+      .json({ error: 'forbidden', message: 'You can only access your own resources.' });
     return;
   }
   next();

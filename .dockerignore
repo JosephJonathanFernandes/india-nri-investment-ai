@@ -1,0 +1,11 @@
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

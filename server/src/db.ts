@@ -32,8 +32,10 @@ async function tryConnectPrisma(): Promise<boolean> {
     console.log('[db] Connected to PostgreSQL via Prisma');
     return true;
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn('[db] PostgreSQL unavailable, falling back to in-memory store:', (err as Error).message);
+    console.warn(
+      '[db] PostgreSQL unavailable, falling back to in-memory store:',
+      (err as Error).message
+    );
     usePrisma = false;
     return false;
   }
@@ -244,7 +246,9 @@ class MemoryDb {
     return { ...user };
   }
   async findUserByEmail(email: string): Promise<StoreUser | null> {
-    const found = [...this.users.values()].find((u) => u.email.toLowerCase() === email.toLowerCase());
+    const found = [...this.users.values()].find(
+      (u) => u.email.toLowerCase() === email.toLowerCase()
+    );
     return found ? { ...found } : null;
   }
   async findUserById(id: string): Promise<StoreUser | null> {
@@ -289,28 +293,43 @@ class MemoryDb {
     const found = [...this.userProfiles.values()].find((p) => p.userId === userId);
     return found ? { ...found } : null;
   }
-  async updateUserProfile(userId: string, data: Partial<StoreUserProfile>): Promise<StoreUserProfile | null> {
+  async updateUserProfile(
+    userId: string,
+    data: Partial<StoreUserProfile>
+  ): Promise<StoreUserProfile | null> {
     const existing = await this.findUserProfileByUserId(userId);
     if (!existing) return null;
     const updated: StoreUserProfile = {
       ...existing,
       id: existing.id,
       updatedAt: now(),
-      ...(data.countryOfResidence !== undefined ? { countryOfResidence: data.countryOfResidence } : {}),
+      ...(data.countryOfResidence !== undefined
+        ? { countryOfResidence: data.countryOfResidence }
+        : {}),
       ...(data.residencyStatus !== undefined ? { residencyStatus: data.residencyStatus } : {}),
-      ...(data.investmentObjectives !== undefined ? { investmentObjectives: data.investmentObjectives } : {}),
+      ...(data.investmentObjectives !== undefined
+        ? { investmentObjectives: data.investmentObjectives }
+        : {}),
       ...(data.riskPreference !== undefined ? { riskPreference: data.riskPreference } : {}),
-      ...(data.investmentAmountRange !== undefined ? { investmentAmountRange: data.investmentAmountRange } : {}),
-      ...(data.repatriationPreference !== undefined ? { repatriationPreference: data.repatriationPreference } : {}),
+      ...(data.investmentAmountRange !== undefined
+        ? { investmentAmountRange: data.investmentAmountRange }
+        : {}),
+      ...(data.repatriationPreference !== undefined
+        ? { repatriationPreference: data.repatriationPreference }
+        : {}),
       ...(data.existingBanking !== undefined ? { existingBanking: data.existingBanking } : {}),
-      ...(data.completedOnboarding !== undefined ? { completedOnboarding: data.completedOnboarding } : {}),
+      ...(data.completedOnboarding !== undefined
+        ? { completedOnboarding: data.completedOnboarding }
+        : {}),
     };
     this.userProfiles.set(existing.id, updated);
     return { ...updated };
   }
 
   // ---- InvestmentCategory ----
-  async createInvestmentCategory(data: Partial<StoreInvestmentCategory>): Promise<StoreInvestmentCategory> {
+  async createInvestmentCategory(
+    data: Partial<StoreInvestmentCategory>
+  ): Promise<StoreInvestmentCategory> {
     const id = data.id || uid();
     const cat: StoreInvestmentCategory = {
       id,
@@ -340,10 +359,13 @@ class MemoryDb {
   }
   async listInvestmentCategories(onlyActive = true): Promise<StoreInvestmentCategory[]> {
     return [...this.investmentCategories.values()]
-      .filter((c) => (!onlyActive || c.isActive))
+      .filter((c) => !onlyActive || c.isActive)
       .map((c) => ({ ...c }));
   }
-  async updateInvestmentCategory(id: string, data: Partial<StoreInvestmentCategory>): Promise<StoreInvestmentCategory | null> {
+  async updateInvestmentCategory(
+    id: string,
+    data: Partial<StoreInvestmentCategory>
+  ): Promise<StoreInvestmentCategory | null> {
     const existing = this.investmentCategories.get(id);
     if (!existing) return null;
     const updated: StoreInvestmentCategory = { ...existing, ...data, updatedAt: now() };
@@ -404,8 +426,10 @@ class MemoryDb {
     if (filter) {
       if (filter.categoryId) rules = rules.filter((r) => r.categoryId === filter.categoryId);
       if (filter.jurisdiction) rules = rules.filter((r) => r.jurisdiction === filter.jurisdiction);
-      if (filter.investorCategory) rules = rules.filter((r) => r.investorCategory === filter.investorCategory);
-      if (filter.isActive !== undefined) rules = rules.filter((r) => r.isActive === filter.isActive);
+      if (filter.investorCategory)
+        rules = rules.filter((r) => r.investorCategory === filter.investorCategory);
+      if (filter.isActive !== undefined)
+        rules = rules.filter((r) => r.isActive === filter.isActive);
       if (filter.reviewStatus) rules = rules.filter((r) => r.reviewStatus === filter.reviewStatus);
     }
     return rules.map((r) => ({
@@ -417,7 +441,10 @@ class MemoryDb {
           : r.conditions,
     }));
   }
-  async updateEligibilityRule(id: string, data: Partial<StoreEligibilityRule>): Promise<StoreEligibilityRule | null> {
+  async updateEligibilityRule(
+    id: string,
+    data: Partial<StoreEligibilityRule>
+  ): Promise<StoreEligibilityRule | null> {
     const existing = this.eligibilityRules.get(id);
     if (!existing) return null;
     const updated: StoreEligibilityRule = { ...existing, ...data, id, updatedAt: now() };
@@ -432,7 +459,9 @@ class MemoryDb {
   }
 
   // ---- RegulatorySource ----
-  async createRegulatorySource(data: Partial<StoreRegulatorySource>): Promise<StoreRegulatorySource> {
+  async createRegulatorySource(
+    data: Partial<StoreRegulatorySource>
+  ): Promise<StoreRegulatorySource> {
     const id = data.id || uid();
     const src: StoreRegulatorySource = {
       id,
@@ -452,7 +481,9 @@ class MemoryDb {
   }
 
   // ---- EligibilityCheck ----
-  async createEligibilityCheck(data: Partial<StoreEligibilityCheck>): Promise<StoreEligibilityCheck> {
+  async createEligibilityCheck(
+    data: Partial<StoreEligibilityCheck>
+  ): Promise<StoreEligibilityCheck> {
     const id = data.id || uid();
     const check: StoreEligibilityCheck = {
       id,
@@ -488,7 +519,9 @@ class MemoryDb {
   }
 
   // ---- EligibilityResult ----
-  async createEligibilityResult(data: Partial<StoreEligibilityResult>): Promise<StoreEligibilityResult> {
+  async createEligibilityResult(
+    data: Partial<StoreEligibilityResult>
+  ): Promise<StoreEligibilityResult> {
     const id = data.id || uid();
     const result: StoreEligibilityResult = {
       id,
@@ -584,7 +617,10 @@ class MemoryDb {
       .sort((a, b) => a.order - b.order)
       .map((i) => ({ ...i }));
   }
-  async updateChecklistItem(id: string, data: Partial<StoreChecklistItem>): Promise<StoreChecklistItem | null> {
+  async updateChecklistItem(
+    id: string,
+    data: Partial<StoreChecklistItem>
+  ): Promise<StoreChecklistItem | null> {
     const existing = this.checklistItems.get(id);
     if (!existing) return null;
     const updated: StoreChecklistItem = { ...existing, ...data, id };
@@ -623,7 +659,9 @@ class MemoryDb {
   }
 
   // ---- RegulatoryUpdate ----
-  async createRegulatoryUpdate(data: Partial<StoreRegulatoryUpdate>): Promise<StoreRegulatoryUpdate> {
+  async createRegulatoryUpdate(
+    data: Partial<StoreRegulatoryUpdate>
+  ): Promise<StoreRegulatoryUpdate> {
     const id = data.id || uid();
     const up: StoreRegulatoryUpdate = {
       id,
@@ -638,13 +676,15 @@ class MemoryDb {
   }
   async listRegulatoryUpdates(onlyActive = true): Promise<StoreRegulatoryUpdate[]> {
     return [...this.regulatoryUpdates.values()]
-      .filter((u) => (!onlyActive || u.isActive))
+      .filter((u) => !onlyActive || u.isActive)
       .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())
       .map((u) => ({ ...u }));
   }
 
   // ---- ChatConversation ----
-  async createChatConversation(data: Partial<StoreChatConversation>): Promise<StoreChatConversation> {
+  async createChatConversation(
+    data: Partial<StoreChatConversation>
+  ): Promise<StoreChatConversation> {
     const id = data.id || uid();
     const conv: StoreChatConversation = {
       id,
@@ -666,7 +706,10 @@ class MemoryDb {
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
       .map((c) => ({ ...c }));
   }
-  async updateChatConversation(id: string, data: Partial<StoreChatConversation>): Promise<StoreChatConversation | null> {
+  async updateChatConversation(
+    id: string,
+    data: Partial<StoreChatConversation>
+  ): Promise<StoreChatConversation | null> {
     const existing = this.chatConversations.get(id);
     if (!existing) return null;
     const updated: StoreChatConversation = { ...existing, ...data, updatedAt: now() };
@@ -729,80 +772,222 @@ export { usePrisma };
 
 export const db = {
   // User
-  createUser: (data: any) => (usePrisma ? createPrisma().user.create({ data }) : memory.createUser(data)),
-  findUserByEmail: (email: string) => (usePrisma ? createPrisma().user.findUnique({ where: { email } }) : memory.findUserByEmail(email)),
-  findUserById: (id: string) => (usePrisma ? createPrisma().user.findUnique({ where: { id } }) : memory.findUserById(id)),
-  updateUser: (id: string, data: any) => (usePrisma ? createPrisma().user.update({ where: { id }, data }) : memory.updateUser(id, data)),
-  deleteUser: (id: string) => (usePrisma ? createPrisma().user.delete({ where: { id } }) : memory.deleteUser(id)),
+  createUser: (data: any) =>
+    usePrisma ? createPrisma().user.create({ data }) : memory.createUser(data),
+  findUserByEmail: (email: string) =>
+    usePrisma
+      ? createPrisma().user.findUnique({ where: { email } })
+      : memory.findUserByEmail(email),
+  findUserById: (id: string) =>
+    usePrisma ? createPrisma().user.findUnique({ where: { id } }) : memory.findUserById(id),
+  updateUser: (id: string, data: any) =>
+    usePrisma ? createPrisma().user.update({ where: { id }, data }) : memory.updateUser(id, data),
+  deleteUser: (id: string) =>
+    usePrisma ? createPrisma().user.delete({ where: { id } }) : memory.deleteUser(id),
   listUsers: () => (usePrisma ? createPrisma().user.findMany() : memory.listUsers()),
 
   // UserProfile
-  createUserProfile: (data: any) => (usePrisma ? createPrisma().userProfile.create({ data }) : memory.createUserProfile(data)),
-  findUserProfileByUserId: (userId: string) => (usePrisma ? createPrisma().userProfile.findUnique({ where: { userId } }) : memory.findUserProfileByUserId(userId)),
-  updateUserProfile: (userId: string, data: any) => (usePrisma ? createPrisma().userProfile.update({ where: { userId }, data }) : memory.updateUserProfile(userId, data)),
+  createUserProfile: (data: any) =>
+    usePrisma ? createPrisma().userProfile.create({ data }) : memory.createUserProfile(data),
+  findUserProfileByUserId: (userId: string) =>
+    usePrisma
+      ? createPrisma().userProfile.findUnique({ where: { userId } })
+      : memory.findUserProfileByUserId(userId),
+  updateUserProfile: (userId: string, data: any) =>
+    usePrisma
+      ? createPrisma().userProfile.update({ where: { userId }, data })
+      : memory.updateUserProfile(userId, data),
 
   // InvestmentCategory
-  createInvestmentCategory: (data: any) => (usePrisma ? createPrisma().investmentCategory.create({ data }) : memory.createInvestmentCategory(data)),
-  findInvestmentCategoryById: (id: string) => (usePrisma ? createPrisma().investmentCategory.findUnique({ where: { id } }) : memory.findInvestmentCategoryById(id)),
-  findInvestmentCategoryBySlug: (slug: string) => (usePrisma ? createPrisma().investmentCategory.findUnique({ where: { slug } }) : memory.findInvestmentCategoryBySlug(slug)),
-  listInvestmentCategories: (onlyActive = true) => (usePrisma ? createPrisma().investmentCategory.findMany({ where: { isActive: onlyActive } }) : memory.listInvestmentCategories(onlyActive)),
-  updateInvestmentCategory: (id: string, data: any) => (usePrisma ? createPrisma().investmentCategory.update({ where: { id }, data }) : memory.updateInvestmentCategory(id, data)),
-  deleteInvestmentCategory: (id: string) => (usePrisma ? createPrisma().investmentCategory.delete({ where: { id } }) : memory.deleteInvestmentCategory(id)),
+  createInvestmentCategory: (data: any) =>
+    usePrisma
+      ? createPrisma().investmentCategory.create({ data })
+      : memory.createInvestmentCategory(data),
+  findInvestmentCategoryById: (id: string) =>
+    usePrisma
+      ? createPrisma().investmentCategory.findUnique({ where: { id } })
+      : memory.findInvestmentCategoryById(id),
+  findInvestmentCategoryBySlug: (slug: string) =>
+    usePrisma
+      ? createPrisma().investmentCategory.findUnique({ where: { slug } })
+      : memory.findInvestmentCategoryBySlug(slug),
+  listInvestmentCategories: (onlyActive = true) =>
+    usePrisma
+      ? createPrisma().investmentCategory.findMany({ where: { isActive: onlyActive } })
+      : memory.listInvestmentCategories(onlyActive),
+  updateInvestmentCategory: (id: string, data: any) =>
+    usePrisma
+      ? createPrisma().investmentCategory.update({ where: { id }, data })
+      : memory.updateInvestmentCategory(id, data),
+  deleteInvestmentCategory: (id: string) =>
+    usePrisma
+      ? createPrisma().investmentCategory.delete({ where: { id } })
+      : memory.deleteInvestmentCategory(id),
 
   // EligibilityRule
-  createEligibilityRule: (data: any) => (usePrisma ? createPrisma().eligibilityRule.create({ data }) : memory.createEligibilityRule(data)),
-  findEligibilityRuleById: (id: string) => (usePrisma ? createPrisma().eligibilityRule.findUnique({ where: { id } }) : memory.findEligibilityRuleById(id)),
-  findEligibilityRuleByRuleId: (ruleId: string) => (usePrisma ? createPrisma().eligibilityRule.findUnique({ where: { ruleId } }) : memory.findEligibilityRuleByRuleId(ruleId)),
-  listEligibilityRules: (filter?: any) => (usePrisma ? createPrisma().eligibilityRule.findMany({ where: filter }) : memory.listEligibilityRules(filter)),
-  updateEligibilityRule: (id: string, data: any) => (usePrisma ? createPrisma().eligibilityRule.update({ where: { id }, data }) : memory.updateEligibilityRule(id, data)),
-  deleteEligibilityRule: (id: string) => (usePrisma ? createPrisma().eligibilityRule.delete({ where: { id } }) : memory.deleteEligibilityRule(id)),
+  createEligibilityRule: (data: any) =>
+    usePrisma
+      ? createPrisma().eligibilityRule.create({ data })
+      : memory.createEligibilityRule(data),
+  findEligibilityRuleById: (id: string) =>
+    usePrisma
+      ? createPrisma().eligibilityRule.findUnique({ where: { id } })
+      : memory.findEligibilityRuleById(id),
+  findEligibilityRuleByRuleId: (ruleId: string) =>
+    usePrisma
+      ? createPrisma().eligibilityRule.findUnique({ where: { ruleId } })
+      : memory.findEligibilityRuleByRuleId(ruleId),
+  listEligibilityRules: (filter?: any) =>
+    usePrisma
+      ? createPrisma().eligibilityRule.findMany({ where: filter })
+      : memory.listEligibilityRules(filter),
+  updateEligibilityRule: (id: string, data: any) =>
+    usePrisma
+      ? createPrisma().eligibilityRule.update({ where: { id }, data })
+      : memory.updateEligibilityRule(id, data),
+  deleteEligibilityRule: (id: string) =>
+    usePrisma
+      ? createPrisma().eligibilityRule.delete({ where: { id } })
+      : memory.deleteEligibilityRule(id),
 
   // RegulatorySource
-  createRegulatorySource: (data: any) => (usePrisma ? createPrisma().regulatorySource.create({ data }) : memory.createRegulatorySource(data)),
-  listRegulatorySources: () => (usePrisma ? createPrisma().regulatorySource.findMany() : memory.listRegulatorySources()),
+  createRegulatorySource: (data: any) =>
+    usePrisma
+      ? createPrisma().regulatorySource.create({ data })
+      : memory.createRegulatorySource(data),
+  listRegulatorySources: () =>
+    usePrisma ? createPrisma().regulatorySource.findMany() : memory.listRegulatorySources(),
 
   // EligibilityCheck
-  createEligibilityCheck: (data: any) => (usePrisma ? createPrisma().eligibilityCheck.create({ data }) : memory.createEligibilityCheck(data)),
-  findEligibilityCheckById: (id: string) => (usePrisma ? createPrisma().eligibilityCheck.findUnique({ where: { id } }) : memory.findEligibilityCheckById(id)),
-  listEligibilityChecksByUser: (userId: string) => (usePrisma ? createPrisma().eligibilityCheck.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }) : memory.listEligibilityChecksByUser(userId)),
-  deleteEligibilityCheck: (id: string) => (usePrisma ? createPrisma().eligibilityCheck.delete({ where: { id } }) : memory.deleteEligibilityCheck(id)),
+  createEligibilityCheck: (data: any) =>
+    usePrisma
+      ? createPrisma().eligibilityCheck.create({ data })
+      : memory.createEligibilityCheck(data),
+  findEligibilityCheckById: (id: string) =>
+    usePrisma
+      ? createPrisma().eligibilityCheck.findUnique({ where: { id } })
+      : memory.findEligibilityCheckById(id),
+  listEligibilityChecksByUser: (userId: string) =>
+    usePrisma
+      ? createPrisma().eligibilityCheck.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+        })
+      : memory.listEligibilityChecksByUser(userId),
+  deleteEligibilityCheck: (id: string) =>
+    usePrisma
+      ? createPrisma().eligibilityCheck.delete({ where: { id } })
+      : memory.deleteEligibilityCheck(id),
 
   // EligibilityResult
-  createEligibilityResult: (data: any) => (usePrisma ? createPrisma().eligibilityResult.create({ data }) : memory.createEligibilityResult(data)),
-  listEligibilityResultsByCheck: (checkId: string) => (usePrisma ? createPrisma().eligibilityResult.findMany({ where: { checkId } }) : memory.listEligibilityResultsByCheck(checkId)),
+  createEligibilityResult: (data: any) =>
+    usePrisma
+      ? createPrisma().eligibilityResult.create({ data })
+      : memory.createEligibilityResult(data),
+  listEligibilityResultsByCheck: (checkId: string) =>
+    usePrisma
+      ? createPrisma().eligibilityResult.findMany({ where: { checkId } })
+      : memory.listEligibilityResultsByCheck(checkId),
 
   // Checklist
-  createChecklist: (data: any) => (usePrisma ? createPrisma().checklist.create({ data }) : memory.createChecklist(data)),
-  findChecklistById: (id: string) => (usePrisma ? createPrisma().checklist.findUnique({ where: { id } }) : memory.findChecklistById(id)),
-  listChecklistsByUser: (userId: string) => (usePrisma ? createPrisma().checklist.findMany({ where: { userId }, orderBy: { updatedAt: 'desc' } }) : memory.listChecklistsByUser(userId)),
-  updateChecklist: (id: string, data: any) => (usePrisma ? createPrisma().checklist.update({ where: { id }, data }) : memory.updateChecklist(id, data)),
-  deleteChecklist: (id: string) => (usePrisma ? createPrisma().checklist.delete({ where: { id } }) : memory.deleteChecklist(id)),
+  createChecklist: (data: any) =>
+    usePrisma ? createPrisma().checklist.create({ data }) : memory.createChecklist(data),
+  findChecklistById: (id: string) =>
+    usePrisma
+      ? createPrisma().checklist.findUnique({ where: { id } })
+      : memory.findChecklistById(id),
+  listChecklistsByUser: (userId: string) =>
+    usePrisma
+      ? createPrisma().checklist.findMany({ where: { userId }, orderBy: { updatedAt: 'desc' } })
+      : memory.listChecklistsByUser(userId),
+  updateChecklist: (id: string, data: any) =>
+    usePrisma
+      ? createPrisma().checklist.update({ where: { id }, data })
+      : memory.updateChecklist(id, data),
+  deleteChecklist: (id: string) =>
+    usePrisma ? createPrisma().checklist.delete({ where: { id } }) : memory.deleteChecklist(id),
 
   // ChecklistItem
-  createChecklistItem: (data: any) => (usePrisma ? createPrisma().checklistItem.create({ data }) : memory.createChecklistItem(data)),
-  listChecklistItems: (checklistId: string) => (usePrisma ? createPrisma().checklistItem.findMany({ where: { checklistId }, orderBy: { order: 'asc' } }) : memory.listChecklistItems(checklistId)),
-  updateChecklistItem: (id: string, data: any) => (usePrisma ? createPrisma().checklistItem.update({ where: { id }, data }) : memory.updateChecklistItem(id, data)),
-  deleteChecklistItem: (id: string) => (usePrisma ? createPrisma().checklistItem.delete({ where: { id } }) : memory.deleteChecklistItem(id)),
+  createChecklistItem: (data: any) =>
+    usePrisma ? createPrisma().checklistItem.create({ data }) : memory.createChecklistItem(data),
+  listChecklistItems: (checklistId: string) =>
+    usePrisma
+      ? createPrisma().checklistItem.findMany({ where: { checklistId }, orderBy: { order: 'asc' } })
+      : memory.listChecklistItems(checklistId),
+  updateChecklistItem: (id: string, data: any) =>
+    usePrisma
+      ? createPrisma().checklistItem.update({ where: { id }, data })
+      : memory.updateChecklistItem(id, data),
+  deleteChecklistItem: (id: string) =>
+    usePrisma
+      ? createPrisma().checklistItem.delete({ where: { id } })
+      : memory.deleteChecklistItem(id),
 
   // SavedInvestment
-  createSavedInvestment: (data: any) => (usePrisma ? createPrisma().savedInvestment.create({ data }) : memory.createSavedInvestment(data)),
-  listSavedInvestmentsByUser: (userId: string) => (usePrisma ? createPrisma().savedInvestment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }) : memory.listSavedInvestmentsByUser(userId)),
-  findSavedInvestmentById: (id: string) => (usePrisma ? createPrisma().savedInvestment.findUnique({ where: { id } }) : memory.findSavedInvestmentById(id)),
-  deleteSavedInvestment: (id: string) => (usePrisma ? createPrisma().savedInvestment.delete({ where: { id } }) : memory.deleteSavedInvestment(id)),
+  createSavedInvestment: (data: any) =>
+    usePrisma
+      ? createPrisma().savedInvestment.create({ data })
+      : memory.createSavedInvestment(data),
+  listSavedInvestmentsByUser: (userId: string) =>
+    usePrisma
+      ? createPrisma().savedInvestment.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+        })
+      : memory.listSavedInvestmentsByUser(userId),
+  findSavedInvestmentById: (id: string) =>
+    usePrisma
+      ? createPrisma().savedInvestment.findUnique({ where: { id } })
+      : memory.findSavedInvestmentById(id),
+  deleteSavedInvestment: (id: string) =>
+    usePrisma
+      ? createPrisma().savedInvestment.delete({ where: { id } })
+      : memory.deleteSavedInvestment(id),
 
   // RegulatoryUpdate
-  createRegulatoryUpdate: (data: any) => (usePrisma ? createPrisma().regulatoryUpdate.create({ data }) : memory.createRegulatoryUpdate(data)),
-  listRegulatoryUpdates: (onlyActive = true) => (usePrisma ? createPrisma().regulatoryUpdate.findMany({ where: { isActive: onlyActive }, orderBy: { publishedAt: 'desc' } }) : memory.listRegulatoryUpdates(onlyActive)),
+  createRegulatoryUpdate: (data: any) =>
+    usePrisma
+      ? createPrisma().regulatoryUpdate.create({ data })
+      : memory.createRegulatoryUpdate(data),
+  listRegulatoryUpdates: (onlyActive = true) =>
+    usePrisma
+      ? createPrisma().regulatoryUpdate.findMany({
+          where: { isActive: onlyActive },
+          orderBy: { publishedAt: 'desc' },
+        })
+      : memory.listRegulatoryUpdates(onlyActive),
 
   // ChatConversation
-  createChatConversation: (data: any) => (usePrisma ? createPrisma().chatConversation.create({ data }) : memory.createChatConversation(data)),
-  findChatConversationById: (id: string) => (usePrisma ? createPrisma().chatConversation.findUnique({ where: { id } }) : memory.findChatConversationById(id)),
-  listChatConversations: (userId?: string) => (usePrisma ? createPrisma().chatConversation.findMany({ where: userId ? { userId } : {}, orderBy: { updatedAt: 'desc' } }) : memory.listChatConversations(userId)),
-  updateChatConversation: (id: string, data: any) => (usePrisma ? createPrisma().chatConversation.update({ where: { id }, data }) : memory.updateChatConversation(id, data)),
+  createChatConversation: (data: any) =>
+    usePrisma
+      ? createPrisma().chatConversation.create({ data })
+      : memory.createChatConversation(data),
+  findChatConversationById: (id: string) =>
+    usePrisma
+      ? createPrisma().chatConversation.findUnique({ where: { id } })
+      : memory.findChatConversationById(id),
+  listChatConversations: (userId?: string) =>
+    usePrisma
+      ? createPrisma().chatConversation.findMany({
+          where: userId ? { userId } : {},
+          orderBy: { updatedAt: 'desc' },
+        })
+      : memory.listChatConversations(userId),
+  updateChatConversation: (id: string, data: any) =>
+    usePrisma
+      ? createPrisma().chatConversation.update({ where: { id }, data })
+      : memory.updateChatConversation(id, data),
 
   // ChatMessage
-  createChatMessage: (data: any) => (usePrisma ? createPrisma().chatMessage.create({ data }) : memory.createChatMessage(data)),
-  listChatMessages: (conversationId: string) => (usePrisma ? createPrisma().chatMessage.findMany({ where: { conversationId }, orderBy: { createdAt: 'asc' } }) : memory.listChatMessages(conversationId)),
+  createChatMessage: (data: any) =>
+    usePrisma ? createPrisma().chatMessage.create({ data }) : memory.createChatMessage(data),
+  listChatMessages: (conversationId: string) =>
+    usePrisma
+      ? createPrisma().chatMessage.findMany({
+          where: { conversationId },
+          orderBy: { createdAt: 'asc' },
+        })
+      : memory.listChatMessages(conversationId),
 
   $connect: tryConnectPrisma,
   $disconnect: async () => {

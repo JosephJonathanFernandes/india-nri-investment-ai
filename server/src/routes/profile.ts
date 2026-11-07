@@ -33,21 +33,27 @@ router.get('/', requireAuth, requireOwnershipOrAdmin, async (req: AuthRequest, r
 });
 
 /** PUT /api/profile */
-router.put('/', requireAuth, requireOwnershipOrAdmin, validate(profileSchema), async (req: AuthRequest, res) => {
-  const userId = (req.params.userId as string) || req.user!.userId;
-  const data = req.body as z.infer<typeof profileSchema>;
+router.put(
+  '/',
+  requireAuth,
+  requireOwnershipOrAdmin,
+  validate(profileSchema),
+  async (req: AuthRequest, res) => {
+    const userId = (req.params.userId as string) || req.user!.userId;
+    const data = req.body as z.infer<typeof profileSchema>;
 
-  let profile = await db.findUserProfileByUserId(userId);
-  if (!profile) {
-    profile = await db.createUserProfile({
-      userId,
-      ...data,
-    });
-  } else {
-    profile = await db.updateUserProfile(userId, data);
+    let profile = await db.findUserProfileByUserId(userId);
+    if (!profile) {
+      profile = await db.createUserProfile({
+        userId,
+        ...data,
+      });
+    } else {
+      profile = await db.updateUserProfile(userId, data);
+    }
+
+    res.json({ profile });
   }
-
-  res.json({ profile });
-});
+);
 
 export default router;

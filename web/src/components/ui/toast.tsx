@@ -2,9 +2,18 @@ import * as React from 'react';
 import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Toast = { id: string; title: string; description?: string; variant?: 'success' | 'error' | 'info' };
+type Toast = {
+  id: string;
+  title: string;
+  description?: string;
+  variant?: 'success' | 'error' | 'info';
+};
 
-type ToastContextType = { toasts: Toast[]; add: (t: Omit<Toast, 'id'>) => void; remove: (id: string) => void };
+type ToastContextType = {
+  toasts: Toast[];
+  add: (t: Omit<Toast, 'id'>) => void;
+  remove: (id: string) => void;
+};
 
 const ToastContext = React.createContext<ToastContextType | null>(null);
 
@@ -45,7 +54,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             {icons[t.variant ?? 'info']}
             <div>
               <h4 className="text-sm font-semibold">{t.title}</h4>
-              {t.description && <p className="text-xs text-muted-foreground dark:text-gray-400">{t.description}</p>}
+              {t.description && (
+                <p className="text-xs text-muted-foreground dark:text-gray-400">{t.description}</p>
+              )}
             </div>
             <button onClick={() => remove(t.id)} className="ml-auto opacity-50 hover:opacity-100">
               <span className="sr-only">Dismiss</span>

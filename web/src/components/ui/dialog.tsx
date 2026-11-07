@@ -29,19 +29,27 @@ function DialogBox({ open, onClose, title, description, children, className }: D
           >
             <div className="fixed inset-0 z-50 overflow-y-auto">
               <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <Dialog.Panel className={cn(
-                  'w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left text-navy-900 shadow-xl transition-all dark:border dark:bg-navy-800 dark:text-white',
-                  className
-                )}
+                <Dialog.Panel
+                  className={cn(
+                    'w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left text-navy-900 shadow-xl transition-all dark:border dark:bg-navy-800 dark:text-white',
+                    className
+                  )}
                 >
                   <div className="flex items-center justify-between mb-4">
                     {title && (
                       <>
-                        <Dialog.Title className="text-lg font-semibold leading-6">{title}</Dialog.Title>
-                        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+                        <Dialog.Title className="text-lg font-semibold leading-6">
+                          {title}
+                        </Dialog.Title>
+                        {description && (
+                          <p className="text-sm text-muted-foreground">{description}</p>
+                        )}
                       </>
                     )}
-                    <button onClick={onClose} className="rounded-xl p-2 text-gray-400 hover:text-navy-900 dark:hover:text-white transition-colors">
+                    <button
+                      onClick={onClose}
+                      className="rounded-xl p-2 text-gray-400 hover:text-navy-900 dark:hover:text-white transition-colors"
+                    >
                       <X className="h-5 w-5" />
                     </button>
                   </div>

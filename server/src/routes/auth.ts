@@ -2,7 +2,12 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { db } from '../db';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken, type TokenPayload } from '../auth';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  type TokenPayload,
+} from '../auth';
 import { config } from '../config';
 import { validate, apiError } from '../middleware/validation';
 import { rateLimit } from '../middleware/rateLimit';
@@ -23,7 +28,7 @@ const loginSchema = z.object({
 });
 
 function setAuthCookies(res: any, accessToken: string, refreshToken: string) {
-  const isProd = config.nodeEnv === 'production';
+  
   res.cookie('access_token', accessToken, {
     httpOnly: true,
     secure: config.cookieSecure,
@@ -56,7 +61,13 @@ router.post('/register', validate(registerSchema), async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = await db.createUser({ email, name, passwordHash, role: 'USER', emailVerified: false });
+  const user = await db.createUser({
+    email,
+    name,
+    passwordHash,
+    role: 'USER',
+    emailVerified: false,
+  });
 
   // Auto-create empty profile placeholder (completed later via onboarding).
   await db.createUserProfile({
@@ -139,7 +150,10 @@ router.post('/refresh', async (req, res) => {
   const newRefreshToken = generateRefreshToken(tokenPayload);
   setAuthCookies(res, accessToken, newRefreshToken);
 
-  res.json({ accessToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+  res.json({
+    accessToken,
+    user: { id: user.id, email: user.email, name: user.name, role: user.role },
+  });
 });
 
 /** GET /api/auth/me */
@@ -151,7 +165,13 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
   }
   const profile = await db.findUserProfileByUserId(user.id);
   res.json({
-    user: { id: user.id, email: user.email, name: user.name, role: user.role, emailVerified: user.emailVerified },
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      emailVerified: user.emailVerified,
+    },
     profile,
     onboardingCompleted: profile?.completedOnboarding ?? false,
   });

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db';
 import { validate, apiError } from '../middleware/validation';
-import { requireAuth, requireOwnershipOrAdmin, AuthRequest } from '../middleware/auth';
+import { requireAuth, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 

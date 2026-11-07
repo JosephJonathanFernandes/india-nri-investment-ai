@@ -28,10 +28,12 @@ app.set('trust proxy', 1);
 
 // Security & CORS
 app.use(helmet());
-app.use(cors({
-  origin: config.frontendUrl,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: config.frontendUrl,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -46,7 +48,12 @@ if (config.nodeEnv === 'development') {
 
 // Routes
 app.get('/api/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok', service: 'nri-investment-simplifier-server', env: config.nodeEnv, db: (db as any).constructor?.name || 'db' });
+  res.json({
+    status: 'ok',
+    service: 'nri-investment-simplifier-server',
+    env: config.nodeEnv,
+    db: (db as any).constructor?.name || 'db',
+  });
 });
 
 app.use('/api/auth', authRoutes);
@@ -68,7 +75,6 @@ app.use((_req: Request, res: Response) => {
 
 // Global error handler
 app.use((err: any, _req: Request, res: Response, _next: Function) => {
-  // eslint-disable-next-line no-console
   console.error('Unhandled error:', err);
   const status = err.status || 500;
   res.status(status).json({
@@ -78,19 +84,24 @@ app.use((err: any, _req: Request, res: Response, _next: Function) => {
   });
 });
 
-const server = app.listen(config.port, async () => {
-  await db.$connect();
-  // Auto-seed demonstration data when using the in-memory store.
-  if (!usePrisma) {
-    try {
-      await seedDemoData();
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('[seed] Auto-seed failed:', (err as Error).message);
+export function createServer(port: number = config.port) {
+  const server = app.listen(port, async () => {
+    await db.$connect();
+    // Auto-seed demonstration data when using the in-memory store.
+    if (!usePrisma) {
+      try {
+        await seedDemoData();
+      } catch (err) {
+        console.warn('[seed] Auto-seed failed:', (err as Error).message);
+      }
     }
-  }
-  // eslint-disable-next-line no-console
-  console.log(`Server listening on http://localhost:${config.port} (${config.nodeEnv})`);
-});
+    const addr = server.address() as { port: number };
+    // eslint-disable-next-line no-console
+    console.log(`Server listening on http://localhost:${addr.port} (${config.nodeEnv})`);
+  });
+  return server;
+}
+
+const server = createServer();
 
 export default server;

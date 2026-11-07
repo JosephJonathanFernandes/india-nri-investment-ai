@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: nri-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nri_user
+      POSTGRES_PASSWORD: nri_password
+      POSTGRES_DB: nri_investment_simplifier
+    ports:
+      - "5432:5432"
+    volumes:
+      - nri_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nri_user -d nri_investment_simplifier"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Backend API (Node.js + Express + Prisma)
+  # ---------------------------------------------------------------------------
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: nri-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "postgresql://nri_user:nri_password@db:5432/nri_investment_simplifier?schema=public"
+      NODE_ENV: production
+      PORT: 4000
+      FRONTEND_URL: http://localhost:5173
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-in-production}
+      JWT_ACCESS_EXPIRY: 15m
+      JWT_REFRESH_EXPIRY: 7d
+      COOKIE_SECURE: "false"
+      COOKIE_SAME_SITE: Lax
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 100
+      ADMIN_EMAIL: admin@nrisimplifier.local
+      ADMIN_PASSWORD: AdminChangeMe123!
+    command: sh -c "npx prisma migrate deploy && npx tsx src/seed.ts && node dist/index.js"
+
+  # ---------------------------------------------------------------------------
+  # Frontend (React + Vite)
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: nri-web
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:5173"
+    environment:
+      NODE_ENV: production
+      VITE_API_BASE: http://localhost:4000
+    command: sh -c "npm run build && serve -s dist -l 5173"
+
+volumes:
+  nri_db_data:

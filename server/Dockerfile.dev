@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 make g++
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 4000
+
+ENV NODE_ENV=development
+ENV PORT=4000
+
+CMD ["npx", "tsx", "watch", "src/index.ts"]

@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -11,7 +18,15 @@ import { Separator } from '@/components/ui/separator';
 import { LogOut } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 
-const COUNTRIES = ['United States', 'United Kingdom', 'United Arab Emirates', 'Canada', 'Australia', 'Singapore', 'Other'];
+const COUNTRIES = [
+  'United States',
+  'United Kingdom',
+  'United Arab Emirates',
+  'Canada',
+  'Australia',
+  'Singapore',
+  'Other',
+];
 const STATUSES = ['NRI', 'OCI', 'Other / unsure'];
 
 export default function Settings() {
@@ -86,7 +101,9 @@ export default function Settings() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-navy-900 dark:text-white">Settings & Profile</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage your profile, preferences, and saved data.</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage your profile, preferences, and saved data.
+            </p>
           </div>
           <div className="flex gap-3">
             {!editing && (
@@ -94,7 +111,12 @@ export default function Settings() {
                 <span className="w-4 h-4 mr-1">🏦</span> Edit profile
               </Button>
             )}
-            <Button variant="outline" onClick={() => { logout(); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                logout();
+              }}
+            >
               <LogOut className="w-4 h-4 mr-1" /> Sign out
             </Button>
           </div>
@@ -115,7 +137,9 @@ export default function Settings() {
                   {user?.name?.charAt(0) || 'U'}
                 </div>
                 <div>
-                  <h2 className="font-bold text-navy-900 dark:text-white">{user?.name || 'No name'}</h2>
+                  <h2 className="font-bold text-navy-900 dark:text-white">
+                    {user?.name || 'No name'}
+                  </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                   <p className="text-xs text-muted-foreground mt-1">Role: {user?.role}</p>
                 </div>
@@ -123,23 +147,56 @@ export default function Settings() {
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InfoRow label="Country of residence" value={profile?.countryOfResidence || '—'} icon={<MapPinIcon className="w-4 h-4" />} />
-                <InfoRow label="Residency status" value={profile?.residencyStatus || '—'} icon={<UserIcon2 className="w-4 h-4" />} />
-                <InfoRow label="Risk preference" value={profile?.riskPreference || '—'} icon={<ShieldIcon className="w-4 h-4" />} />
-                <InfoRow label="Investment amount" value={profile?.investmentAmountRange || '—'} icon={<BuildingIcon className="w-4 h-4" />} />
-                <InfoRow label="Repatriation preference" value={profile?.repatriationPreference || '—'} icon={<ArrowIcon className="w-4 h-4" />} />
-                <InfoRow label="Existing banking" value={profile?.existingBanking?.join(', ') || 'None'} icon={<BankIcon className="w-4 h-4" />} />
+                <InfoRow
+                  label="Country of residence"
+                  value={profile?.countryOfResidence || '—'}
+                  icon={<MapPinIcon className="w-4 h-4" />}
+                />
+                <InfoRow
+                  label="Residency status"
+                  value={profile?.residencyStatus || '—'}
+                  icon={<UserIcon2 className="w-4 h-4" />}
+                />
+                <InfoRow
+                  label="Risk preference"
+                  value={profile?.riskPreference || '—'}
+                  icon={<ShieldIcon className="w-4 h-4" />}
+                />
+                <InfoRow
+                  label="Investment amount"
+                  value={profile?.investmentAmountRange || '—'}
+                  icon={<BuildingIcon className="w-4 h-4" />}
+                />
+                <InfoRow
+                  label="Repatriation preference"
+                  value={profile?.repatriationPreference || '—'}
+                  icon={<ArrowIcon className="w-4 h-4" />}
+                />
+                <InfoRow
+                  label="Existing banking"
+                  value={profile?.existingBanking?.join(', ') || 'None'}
+                  icon={<BankIcon className="w-4 h-4" />}
+                />
               </div>
               <div className="pt-4 border-t border-gray-200 dark:border-white/10">
-                <h3 className="text-sm font-semibold text-navy-900 dark:text-white mb-3">Investment objectives</h3>
+                <h3 className="text-sm font-semibold text-navy-900 dark:text-white mb-3">
+                  Investment objectives
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {(profile?.investmentObjectives || []).map((o: string, _i: number) => (
-                    <span key={_i} className="px-3 py-1 rounded-lg border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-sm text-gray-600 dark:text-gray-300">{o}</span>
+                    <span
+                      key={_i}
+                      className="px-3 py-1 rounded-lg border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/5 text-sm text-gray-600 dark:text-gray-300"
+                    >
+                      {o}
+                    </span>
                   ))}
                 </div>
               </div>
               <div className="pt-4 border-t border-gray-200 dark:border-white/10">
-                <h3 className="text-sm font-semibold text-navy-900 dark:text-white mb-3">Onboarding status</h3>
+                <h3 className="text-sm font-semibold text-navy-900 dark:text-white mb-3">
+                  Onboarding status
+                </h3>
                 <Badge variant={profile?.completedOnboarding ? 'eligible' : 'insufficient'}>
                   {profile?.completedOnboarding ? 'Completed' : 'Not completed'}
                 </Badge>
@@ -153,37 +210,70 @@ export default function Settings() {
           <Card>
             <CardHeader className="p-5 pb-3">
               <CardTitle>Edit profile</CardTitle>
-              <CardDescription className="text-sm">Update your residency and investment preferences.</CardDescription>
+              <CardDescription className="text-sm">
+                Update your residency and investment preferences.
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-5 pt-0">
               <form onSubmit={handleSave} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-navy-900 dark:text-white">Full name</label>
-                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                    <label className="text-sm font-medium text-navy-900 dark:text-white">
+                      Full name
+                    </label>
+                    <Input
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-navy-900 dark:text-white">Email</label>
-                    <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} disabled />
+                    <label className="text-sm font-medium text-navy-900 dark:text-white">
+                      Email
+                    </label>
+                    <Input
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      disabled
+                    />
                     <p className="text-xs text-muted-foreground">Email cannot be changed here.</p>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Country of residence</label>
-                  <Select value={form.countryOfResidence} onChange={(e) => setForm({ ...form, countryOfResidence: e.target.value })}>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Country of residence
+                  </label>
+                  <Select
+                    value={form.countryOfResidence}
+                    onChange={(e) => setForm({ ...form, countryOfResidence: e.target.value })}
+                  >
                     <option value="">Select a country</option>
-                    {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {COUNTRIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Residency status</label>
-                  <Select value={form.residencyStatus} onChange={(e) => setForm({ ...form, residencyStatus: e.target.value })}>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Residency status
+                  </label>
+                  <Select
+                    value={form.residencyStatus}
+                    onChange={(e) => setForm({ ...form, residencyStatus: e.target.value })}
+                  >
                     <option value="">Select status</option>
-                    {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Risk preference</label>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Risk preference
+                  </label>
                   <div className="grid grid-cols-3 gap-2">
                     {['Conservative', 'Moderate', 'Aggressive'].map((r) => (
                       <button
@@ -203,25 +293,52 @@ export default function Settings() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Investment amount range</label>
-                  <Select value={form.investmentAmountRange} onChange={(e) => setForm({ ...form, investmentAmountRange: e.target.value })}>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Investment amount range
+                  </label>
+                  <Select
+                    value={form.investmentAmountRange}
+                    onChange={(e) => setForm({ ...form, investmentAmountRange: e.target.value })}
+                  >
                     <option value="">Select range</option>
-                    {['Less than ₹5 lakh', '₹5 lakh – ₹25 lakh', '₹25 lakh – ₹1 crore', '₹1 crore – ₹5 crore', 'More than ₹5 crore'].map((a) => (
-                      <option key={a} value={a}>{a}</option>
+                    {[
+                      'Less than ₹5 lakh',
+                      '₹5 lakh – ₹25 lakh',
+                      '₹25 lakh – ₹1 crore',
+                      '₹1 crore – ₹5 crore',
+                      'More than ₹5 crore',
+                    ].map((a) => (
+                      <option key={a} value={a}>
+                        {a}
+                      </option>
                     ))}
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Repatriation preference</label>
-                  <Select value={form.repatriationPreference} onChange={(e) => setForm({ ...form, repatriationPreference: e.target.value })}>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Repatriation preference
+                  </label>
+                  <Select
+                    value={form.repatriationPreference}
+                    onChange={(e) => setForm({ ...form, repatriationPreference: e.target.value })}
+                  >
                     <option value="">Select preference</option>
-                    {['Prefer full repatriation where legally permitted', 'Partial repatriation', 'No immediate repatriation requirement', 'Unsure'].map((r) => (
-                      <option key={r} value={r}>{r}</option>
+                    {[
+                      'Prefer full repatriation where legally permitted',
+                      'Partial repatriation',
+                      'No immediate repatriation requirement',
+                      'Unsure',
+                    ].map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
                     ))}
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Existing banking arrangements</label>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Existing banking arrangements
+                  </label>
                   <div className="grid grid-cols-3 gap-2">
                     {['NRE account', 'NRO account', 'FCNR deposit', 'None', 'Unsure'].map((b) => (
                       <button
@@ -241,7 +358,9 @@ export default function Settings() {
                   </div>
                 </div>
                 <CardFooter className="p-4 border-t border-gray-200 dark:border-white/10 flex gap-3">
-                  <Button variant="outline" onClick={() => setEditing(false)} disabled={saving}>Cancel</Button>
+                  <Button variant="outline" onClick={() => setEditing(false)} disabled={saving}>
+                    Cancel
+                  </Button>
                   <Button variant="emerald" type="submit" disabled={saving}>
                     {saving ? 'Saving…' : 'Save changes'}
                   </Button>
@@ -266,19 +385,33 @@ function InfoRow({ label, value, icon }: { label: string; value: string; icon: R
         {icon}
       </div>
       <div>
-        <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          {label}
+        </div>
         <div className="text-sm font-medium text-navy-900 dark:text-white">{value}</div>
       </div>
     </div>
   );
 }
 
-function MapPinIcon({ className }: { className?: string }) { return <span className={className}>📍</span>; }
-function UserIcon2({ className }: { className?: string }) { return <span className={className}>👤</span>; }
-function ShieldIcon({ className }: { className?: string }) { return <span className={className}>🛡️</span>; }
-function BuildingIcon({ className }: { className?: string }) { return <span className={className}>🏦</span>; }
-function ArrowIcon({ className }: { className?: string }) { return <span className={className}>↔️</span>; }
-function BankIcon({ className }: { className?: string }) { return <span className={className}>🏛️</span>; }
+function MapPinIcon({ className }: { className?: string }) {
+  return <span className={className}>📍</span>;
+}
+function UserIcon2({ className }: { className?: string }) {
+  return <span className={className}>👤</span>;
+}
+function ShieldIcon({ className }: { className?: string }) {
+  return <span className={className}>🛡️</span>;
+}
+function BuildingIcon({ className }: { className?: string }) {
+  return <span className={className}>🏦</span>;
+}
+function ArrowIcon({ className }: { className?: string }) {
+  return <span className={className}>↔️</span>;
+}
+function BankIcon({ className }: { className?: string }) {
+  return <span className={className}>🏛️</span>;
+}
 
 function cn(...classes: (string | boolean | undefined | null)[]) {
   return classes.filter(Boolean).join(' ');

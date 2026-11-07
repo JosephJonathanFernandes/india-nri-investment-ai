@@ -4,7 +4,10 @@ import { config } from '../config';
 const hits = new Map<string, { count: number; resetAt: number }>();
 
 export function rateLimit(req: Request, res: Response, next: NextFunction): void {
-  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+  const ip =
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    req.socket.remoteAddress ||
+    'unknown';
   const now = Date.now();
   let entry = hits.get(ip);
   if (!entry || now > entry.resetAt) {

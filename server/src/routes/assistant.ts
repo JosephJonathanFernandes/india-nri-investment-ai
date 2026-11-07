@@ -19,7 +19,10 @@ router.post('/chat', optionalAuth, validate(chatSchema), async (req: AuthRequest
   let convId = conversationId;
   if (req.user) {
     if (!convId) {
-      const conv = await db.createChatConversation({ userId: req.user.userId, title: message.slice(0, 60) });
+      const conv = await db.createChatConversation({
+        userId: req.user.userId,
+        title: message.slice(0, 60),
+      });
       convId = conv.id;
     } else {
       const existing = await db.findChatConversationById(convId);
@@ -39,15 +42,20 @@ router.post('/chat', optionalAuth, validate(chatSchema), async (req: AuthRequest
     answer = result.answer;
     sources = result.sources;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('[assistant] error:', err);
-    answer = 'I could not generate a response at this time. Please try again later or consult a qualified professional.';
+    answer =
+      'I could not generate a response at this time. Please try again later or consult a qualified professional.';
     sources = [];
   }
 
   if (convId) {
     await db.createChatMessage({ conversationId: convId, role: 'USER', content: message });
-    await db.createChatMessage({ conversationId: convId, role: 'ASSISTANT', content: answer, sources });
+    await db.createChatMessage({
+      conversationId: convId,
+      role: 'ASSISTANT',
+      content: answer,
+      sources,
+    });
     if (req.user) {
       await db.updateChatConversation(convId, { title: message.slice(0, 60) });
     }

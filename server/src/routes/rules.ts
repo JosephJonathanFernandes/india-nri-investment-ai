@@ -72,20 +72,26 @@ router.post('/', requireAuth, requireAdmin, validate(ruleSchema), async (req: Au
 });
 
 /** PUT /api/rules/:id (admin) */
-router.put('/:id', requireAuth, requireAdmin, validate(ruleSchema), async (req: AuthRequest, res) => {
-  const rule = await db.findEligibilityRuleById(req.params.id);
-  if (!rule) {
-    apiError(res, 404, 'not_found', 'Rule not found.');
-    return;
+router.put(
+  '/:id',
+  requireAuth,
+  requireAdmin,
+  validate(ruleSchema),
+  async (req: AuthRequest, res) => {
+    const rule = await db.findEligibilityRuleById(req.params.id);
+    if (!rule) {
+      apiError(res, 404, 'not_found', 'Rule not found.');
+      return;
+    }
+    const data = req.body as z.infer<typeof ruleSchema>;
+    const updated = await db.updateEligibilityRule(rule.id, {
+      ...data,
+      effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : rule.effectiveDate,
+      lastVerified: data.lastVerified ? new Date(data.lastVerified) : rule.lastVerified,
+    });
+    res.json({ rule: updated });
   }
-  const data = req.body as z.infer<typeof ruleSchema>;
-  const updated = await db.updateEligibilityRule(rule.id, {
-    ...data,
-    effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : rule.effectiveDate,
-    lastVerified: data.lastVerified ? new Date(data.lastVerified) : rule.lastVerified,
-  });
-  res.json({ rule: updated });
-});
+);
 
 /** DELETE /api/rules/:id (admin) */
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {

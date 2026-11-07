@@ -141,7 +141,6 @@ async function seedDemoData(): Promise<void> {
 export { seedDemoData };
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error('[seed] Failed:', err);
   process.exit(1);
 });

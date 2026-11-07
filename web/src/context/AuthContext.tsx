@@ -1,6 +1,21 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { api } from '../lib/api';
-import { getToken, setToken, removeToken, getUser, setUser, removeUser, isLoggedIn } from '../lib/auth';
+import {
+  getToken,
+  setToken,
+  removeToken,
+  getUser,
+  setUser,
+  removeUser,
+  isLoggedIn,
+} from '../lib/auth';
 
 type User = { id: string; email: string; name?: string | null; role: string };
 type Profile = any;
@@ -74,7 +89,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, profile, token: getToken(), isAuthenticated: !!getToken(), isLoading, login, register, logout, fetchProfile, updateProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        token: getToken(),
+        isAuthenticated: !!getToken(),
+        isLoading,
+        login,
+        register,
+        logout,
+        fetchProfile,
+        updateProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

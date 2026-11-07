@@ -19,14 +19,11 @@ class ApiErrorClass extends Error {
   }
 }
 
-async function request<T>(
-  input: RequestInfo | URL,
-  init?: RequestInit
-): Promise<T> {
+async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(init?.headers as Record<string, string> || {}),
+    ...((init?.headers as Record<string, string>) || {}),
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -40,7 +37,12 @@ async function request<T>(
     try {
       body = (await res.json()) as ApiError;
     } catch {}
-    throw new ApiErrorClass(res.status, body.message || `Request failed (${res.status})`, body.error, body.issues);
+    throw new ApiErrorClass(
+      res.status,
+      body.message || `Request failed (${res.status})`,
+      body.error,
+      body.issues
+    );
   }
 
   if (res.status === 204) return undefined as unknown as T;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { estimateTax, VERSION } from '../services/taxEstimator';
-import { validate, apiError } from '../middleware/validation';
+import { validate } from '../middleware/validation';
 import { optionalAuth, AuthRequest } from '../middleware/auth';
 
 const router = Router();

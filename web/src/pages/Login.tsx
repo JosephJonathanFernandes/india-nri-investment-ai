@@ -30,12 +30,19 @@ export default function Login() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
-            <Link to="/" className="flex items-center justify-center gap-2 text-navy-900 dark:text-white font-bold text-xl mb-4">
-              <div className="h-7 w-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">N</div>
+            <Link
+              to="/"
+              className="flex items-center justify-center gap-2 text-navy-900 dark:text-white font-bold text-xl mb-4"
+            >
+              <div className="h-7 w-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
+                N
+              </div>
               NRI Investment Simplifier
             </Link>
             <h2 className="text-2xl font-bold text-navy-900 dark:text-white">Welcome back</h2>
-            <p className="text-gray-600 dark:text-gray-400">Sign in to access your dashboard and eligibility checks.</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Sign in to access your dashboard and eligibility checks.
+            </p>
           </div>
 
           {error && (
@@ -53,7 +60,9 @@ export default function Login() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Email address</label>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Email address
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <Input
@@ -65,7 +74,9 @@ export default function Login() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-navy-900 dark:text-white">Password</label>
+                  <label className="text-sm font-medium text-navy-900 dark:text-white">
+                    Password
+                  </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <Input
@@ -79,9 +90,18 @@ export default function Login() {
                 </div>
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" className="rounded border-gray-300 text-navy-900 focus:ring-navy-900" /> Remember me
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-navy-900 focus:ring-navy-900"
+                    />{' '}
+                    Remember me
                   </label>
-                  <Link to="/forgot-password" className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline">Forgot password?</Link>
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
                 <Button type="submit" variant="emerald" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Signing in...' : 'Sign in'}
@@ -93,7 +113,12 @@ export default function Login() {
 
           <p className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
             Don't have an account?{' '}
-            <Link to="/register" className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline">Create one</Link>
+            <Link
+              to="/register"
+              className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
+            >
+              Create one
+            </Link>
           </p>
         </div>
       </div>

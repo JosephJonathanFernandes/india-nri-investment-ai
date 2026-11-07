@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-} from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 
 type OutcomeDonutProps = {
@@ -70,7 +68,9 @@ export function OutcomeDonut({ checks, className }: OutcomeDonutProps) {
                   const pct = total ? Math.round((entry.value / total) * 100) : 0;
                   return (
                     <div className="p-2 bg-white dark:bg-navy-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm">
-                      <div className="font-medium text-navy-900 dark:text-white">{entry.outcome}</div>
+                      <div className="font-medium text-navy-900 dark:text-white">
+                        {entry.outcome}
+                      </div>
                       <div className="text-gray-600 dark:text-gray-400">
                         {entry.value} check{payload.length > 1 ? 's' : ''} ({pct}%)
                       </div>

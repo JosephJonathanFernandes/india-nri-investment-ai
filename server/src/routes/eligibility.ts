@@ -1,7 +1,16 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { db, type StoreEligibilityCheck, type StoreEligibilityResult, type StoreInvestmentCategory } from '../db';
-import { evaluateEligibility, type EligibilityInput, OUTCOME_LABELS } from '../services/eligibilityEngine';
+import {
+  db,
+  type StoreEligibilityCheck,
+  type StoreEligibilityResult,
+  type StoreInvestmentCategory,
+} from '../db';
+import {
+  evaluateEligibility,
+  type EligibilityInput,
+  OUTCOME_LABELS,
+} from '../services/eligibilityEngine';
 import { validate, apiError } from '../middleware/validation';
 import { requireAuth, optionalAuth, AuthRequest } from '../middleware/auth';
 
@@ -21,7 +30,12 @@ router.post('/check', optionalAuth, validate(checkSchema), async (req: AuthReque
   const residencyStatus = profile?.residencyStatus || req.body.residencyStatus || '';
 
   if (!countryOfResidence || !residencyStatus) {
-    apiError(res, 400, 'profile_incomplete', 'Complete your onboarding profile before running an eligibility check.');
+    apiError(
+      res,
+      400,
+      'profile_incomplete',
+      'Complete your onboarding profile before running an eligibility check.'
+    );
     return;
   }
 
@@ -30,7 +44,8 @@ router.post('/check', optionalAuth, validate(checkSchema), async (req: AuthReque
     residencyStatus,
     category: req.body.category,
     investmentAmount: req.body.investmentAmount ?? undefined,
-    repatriationPreference: req.body.repatriationPreference ?? profile?.repatriationPreference ?? undefined,
+    repatriationPreference:
+      req.body.repatriationPreference ?? profile?.repatriationPreference ?? undefined,
     existingBanking: profile?.existingBanking ?? [],
   };
 
@@ -41,7 +56,8 @@ router.post('/check', optionalAuth, validate(checkSchema), async (req: AuthReque
   if (req.user) {
     const categories = await db.listInvestmentCategories(true);
     const category = categories.find(
-      (c: StoreInvestmentCategory) => c.name.toLowerCase() === input.category.toLowerCase() || c.slug === input.category
+      (c: StoreInvestmentCategory) =>
+        c.name.toLowerCase() === input.category.toLowerCase() || c.slug === input.category
     );
     const check = await db.createEligibilityCheck({
       userId: req.user.userId,

@@ -153,14 +153,28 @@ function matchList(inputValue: string, conditionValue: any, op: string): boolean
 
 function compareNumbers(a: number, op: string, b: number): boolean {
   switch (op) {
-    case 'eq': case '=': return a === b;
-    case 'ne': case '!=': return a !== b;
-    case 'gt': case '>': return a > b;
-    case 'gte': case '>=': return a >= b;
-    case 'lt': case '<': return a < b;
-    case 'lte': case '<=': return a <= b;
-    case 'between': return a >= b && a <= b; // b treated as lower; upper not supported here
-    default: return false;
+    case 'eq':
+    case '=':
+      return a === b;
+    case 'ne':
+    case '!=':
+      return a !== b;
+    case 'gt':
+    case '>':
+      return a > b;
+    case 'gte':
+    case '>=':
+      return a >= b;
+    case 'lt':
+    case '<':
+      return a < b;
+    case 'lte':
+    case '<=':
+      return a <= b;
+    case 'between':
+      return a >= b && a <= b; // b treated as lower; upper not supported here
+    default:
+      return false;
   }
 }
 
@@ -185,10 +199,13 @@ export async function evaluateEligibility(input: EligibilityInput): Promise<{
 }> {
   const categories = await db.listInvestmentCategories(true);
   let category = categories.find(
-    (c: StoreInvestmentCategory) => c.name.toLowerCase() === input.category.toLowerCase() || c.slug === input.category
+    (c: StoreInvestmentCategory) =>
+      c.name.toLowerCase() === input.category.toLowerCase() || c.slug === input.category
   );
   if (!category) {
-    category = categories.find((c: StoreInvestmentCategory) => c.slug === input.category.toLowerCase());
+    category = categories.find(
+      (c: StoreInvestmentCategory) => c.slug === input.category.toLowerCase()
+    );
   }
 
   const allRules = await db.listEligibilityRules({ isActive: true });
@@ -197,11 +214,19 @@ export async function evaluateEligibility(input: EligibilityInput): Promise<{
   const relevant = allRules.filter((r: StoreEligibilityRule) => {
     if (category && r.categoryId !== category.id) return false;
     // jurisdiction match: exact or wildcard '*'
-    if (r.jurisdiction && r.jurisdiction !== '*' && r.jurisdiction.toLowerCase() !== input.countryOfResidence.toLowerCase()) {
+    if (
+      r.jurisdiction &&
+      r.jurisdiction !== '*' &&
+      r.jurisdiction.toLowerCase() !== input.countryOfResidence.toLowerCase()
+    ) {
       return false;
     }
     // investor category match: exact or wildcard 'ANY'
-    if (r.investorCategory && r.investorCategory !== 'ANY' && r.investorCategory.toLowerCase() !== input.residencyStatus.toLowerCase()) {
+    if (
+      r.investorCategory &&
+      r.investorCategory !== 'ANY' &&
+      r.investorCategory.toLowerCase() !== input.residencyStatus.toLowerCase()
+    ) {
       return false;
     }
     return true;
@@ -277,7 +302,8 @@ function computeOverallOutcome(rules: MatchedRule[]): {
   if (rules.length === 0) {
     return {
       outcome: 'INSUFFICIENT_INFO',
-      summary: 'No applicable eligibility rules were found for your profile and the selected investment. This does not mean the investment is restricted — it means we cannot determine eligibility from the rules currently on file.',
+      summary:
+        'No applicable eligibility rules were found for your profile and the selected investment. This does not mean the investment is restricted — it means we cannot determine eligibility from the rules currently on file.',
       unresolved: false,
     };
   }
@@ -285,9 +311,6 @@ function computeOverallOutcome(rules: MatchedRule[]): {
   const outcomes = [...new Set(rules.map((r) => r.outcome))];
   const hasRestriction = rules.some((r) => r.outcome === 'POTENTIAL_RESTRICTION');
   const hasVerification = rules.some((r) => r.outcome === 'VERIFICATION_REQUIRED');
-  const hasEligible = rules.some((r) => r.outcome === 'POTENTIALLY_ELIGIBLE');
-  const hasInsufficient = rules.some((r) => r.outcome === 'INSUFFICIENT_INFO');
-
   let outcome: EligibilityOutcome;
   let unresolved = false;
   let summary: string;
@@ -297,16 +320,20 @@ function computeOverallOutcome(rules: MatchedRule[]): {
     unresolved = false;
     switch (outcome) {
       case 'POTENTIALLY_ELIGIBLE':
-        summary = 'General rules suggest this investment may be available to you, subject to the conditions and account requirements listed below.';
+        summary =
+          'General rules suggest this investment may be available to you, subject to the conditions and account requirements listed below.';
         break;
       case 'POTENTIAL_RESTRICTION':
-        summary = 'A relevant rule or country-specific limitation may apply. Please review the restriction details and confirm with an authorized financial institution before proceeding.';
+        summary =
+          'A relevant rule or country-specific limitation may apply. Please review the restriction details and confirm with an authorized financial institution before proceeding.';
         break;
       case 'VERIFICATION_REQUIRED':
-        summary = 'More information or confirmation from an authorized financial institution is necessary before eligibility can be determined.';
+        summary =
+          'More information or confirmation from an authorized financial institution is necessary before eligibility can be determined.';
         break;
       case 'INSUFFICIENT_INFO':
-        summary = 'The available rules do not provide enough information to determine eligibility reliably.';
+        summary =
+          'The available rules do not provide enough information to determine eligibility reliably.';
         break;
       default:
         summary = 'Eligibility could not be determined from the available rules.';
@@ -316,15 +343,18 @@ function computeOverallOutcome(rules: MatchedRule[]): {
     unresolved = true;
     outcome = 'UNRESOLVED';
     if (hasRestriction) {
-      summary = 'Matching rules give conflicting guidance, including a possible country-specific restriction. This case requires manual review by our compliance team before any investment decision.';
+      summary =
+        'Matching rules give conflicting guidance, including a possible country-specific restriction. This case requires manual review by our compliance team before any investment decision.';
     } else if (hasVerification) {
-      summary = 'Matching rules give conflicting guidance. Additional verification from an authorized financial institution is required.';
+      summary =
+        'Matching rules give conflicting guidance. Additional verification from an authorized financial institution is required.';
     } else {
-      summary = 'Matching rules give conflicting guidance. This case has been flagged for manual review.';
+      summary =
+        'Matching rules give conflicting guidance. This case has been flagged for manual review.';
     }
   }
 
-  return { outcome, summary, unresolved };
+  return { outcome, summary, unresolved: unresolved };
 }
 
 export const OUTCOME_LABELS: Record<EligibilityOutcome, string> = {

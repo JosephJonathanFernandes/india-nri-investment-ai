@@ -19,12 +19,12 @@ function getOpenAI(): OpenAI | null {
 }
 
 const DISCLAIMER =
-  '\n\n---\n*This is educational guidance, not legal, tax, or investment advice. '
-  + 'Regulatory eligibility and tax treatment can change and depend on your '
-  + 'specific circumstances. Please consult a qualified financial adviser, '
-  + 'tax professional, or the relevant authority (RBI, SEBI, Income Tax '
-  + 'Department, or your country of residence\u2019s tax authority) before making '
-  + 'investment decisions.*';
+  '\n\n---\n*This is educational guidance, not legal, tax, or investment advice. ' +
+  'Regulatory eligibility and tax treatment can change and depend on your ' +
+  'specific circumstances. Please consult a qualified financial adviser, ' +
+  'tax professional, or the relevant authority (RBI, SEBI, Income Tax ' +
+  'Department, or your country of residence\u2019s tax authority) before making ' +
+  'investment decisions.*';
 
 const SYSTEM_PROMPT = `You are the NRI Investment Assistant for the "NRI Investment Simplifier" platform.
 You help Non-Resident Indians understand Indian investment eligibility, account types (NRE/NRO/FCNR),
@@ -49,13 +49,29 @@ Keep responses concise, clear, and educational.`;
 async function retrieveSources(query: string, limit = 5): Promise<StoreRegulatorySource[]> {
   const sources = await db.listRegulatorySources();
   const q = query.toLowerCase();
-  interface ScoredSource { s: StoreRegulatorySource; score: number }
+  interface ScoredSource {
+    s: StoreRegulatorySource;
+    score: number;
+  }
   const scored = sources
     .filter((s: StoreRegulatorySource) => s.isReliable)
     .map((s: StoreRegulatorySource): ScoredSource => {
       let score = 0;
       const text = `${s.name} ${s.type} ${s.country}`.toLowerCase();
-      for (const term of ['rbi', 'sebi', 'income tax', 'finance', 'mutual fund', 'equity', 'nre', 'nro', 'repatriation', 'gift city', 'bond', 'deposit']) {
+      for (const term of [
+        'rbi',
+        'sebi',
+        'income tax',
+        'finance',
+        'mutual fund',
+        'equity',
+        'nre',
+        'nro',
+        'repatriation',
+        'gift city',
+        'bond',
+        'deposit',
+      ]) {
         if (q.includes(term) && text.includes(term)) score += 1;
       }
       return { s, score };
@@ -69,14 +85,21 @@ async function retrieveSources(query: string, limit = 5): Promise<StoreRegulator
 
 function sourcesText(sources: Array<StoreRegulatorySource>): string {
   if (sources.length === 0) return '';
-  const lines = sources.map((s: StoreRegulatorySource) => `- ${s.name} (${s.type}, ${s.country})${s.url ? `: ${s.url}` : ''}`);
+  const lines = sources.map(
+    (s: StoreRegulatorySource) =>
+      `- ${s.name} (${s.type}, ${s.country})${s.url ? `: ${s.url}` : ''}`
+  );
   return 'Relevant official sources:\n' + lines.join('\n') + '\n';
 }
 
 /**
  * Deterministic mock assistant used when OpenAI is unavailable.
  */
-function mockAnswer(question: string, profile: any, sources: StoreRegulatorySource[]): { answer: string; sources: string[] } {
+function mockAnswer(
+  question: string,
+  profile: any,
+  sources: StoreRegulatorySource[]
+): { answer: string; sources: string[] } {
   const q = question.toLowerCase();
   let answer = '';
   const srcUrls: string[] = [];
@@ -164,8 +187,10 @@ export async function answerQuestion(
       const answer = content.trim() + DISCLAIMER;
       return { answer, sources: sources.map((s) => s.url).filter(Boolean) as string[] };
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('[aiAssistant] OpenAI request failed, using mock fallback:', (err as Error).message);
+      console.warn(
+        '[aiAssistant] OpenAI request failed, using mock fallback:',
+        (err as Error).message
+      );
     }
   }
 

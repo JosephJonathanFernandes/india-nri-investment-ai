@@ -1,6 +1,13 @@
 import React from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
 } from 'recharts';
 
 type RiskLiquidityProps = {
@@ -36,7 +43,11 @@ export function RiskLiquidityChart({ categories, className }: RiskLiquidityProps
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ left: 20, right: 20, top: 20, bottom: 20 }}
+        >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis type="number" domain={[0, 5.5]} />
           <YAxis dataKey="name" type="category" width={130} />
@@ -44,8 +55,11 @@ export function RiskLiquidityChart({ categories, className }: RiskLiquidityProps
             content={({ active, payload }: any) => {
               if (active && payload && payload.length) {
                 const entry = payload[0].payload as any;
-                const riskLabel = Object.entries(RISK_SCORE).find(([, v]) => v === entry.risk)?.[0] ?? 'Moderate';
-                const liqLabel = Object.entries(LIQUIDITY_SCORE).find(([, v]) => v === entry.liquidity)?.[0] ?? 'Moderate';
+                const riskLabel =
+                  Object.entries(RISK_SCORE).find(([, v]) => v === entry.risk)?.[0] ?? 'Moderate';
+                const liqLabel =
+                  Object.entries(LIQUIDITY_SCORE).find(([, v]) => v === entry.liquidity)?.[0] ??
+                  'Moderate';
                 return (
                   <div className="p-2 bg-white dark:bg-navy-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm">
                     <div className="font-medium text-navy-900 dark:text-white">{entry.name}</div>

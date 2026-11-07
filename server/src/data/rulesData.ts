@@ -11,8 +11,10 @@
 
 import { StoreEligibilityRule, StoreInvestmentCategory, StoreRegulatorySource } from '../../src/db';
 
-type CategoryInput = Partial<StoreInvestmentCategory> & Pick<StoreInvestmentCategory, 'name' | 'slug' | 'description'>;
-type SourceInput = Partial<StoreRegulatorySource> & Pick<StoreRegulatorySource, 'name' | 'url' | 'type' | 'country'>;
+type CategoryInput = Partial<StoreInvestmentCategory> &
+  Pick<StoreInvestmentCategory, 'name' | 'slug' | 'description'>;
+type SourceInput = Partial<StoreRegulatorySource> &
+  Pick<StoreRegulatorySource, 'name' | 'url' | 'type' | 'country'>;
 
 // ---------------------------------------------------------------------------
 // Countries supported
@@ -50,7 +52,11 @@ export const INVESTMENT_CATEGORIES: CategoryInput[] = [
     repatriation: 'Repatriable via NRE; subject to FEMA/PIS where applicable',
     taxComplexity: 'Moderate-High',
     accountRequirements: 'NRE/NRO account, NRI demat & trading account, PIS (where applicable)',
-    officialSources: ['https://www.sebi.gov.in', 'https://www.rbi.org.in', 'https://www.nseindia.com'],
+    officialSources: [
+      'https://www.sebi.gov.in',
+      'https://www.rbi.org.in',
+      'https://www.nseindia.com',
+    ],
   },
   {
     name: 'Exchange-Traded Funds (ETFs)',
@@ -170,16 +176,17 @@ function cond(key: string, operator: string, value: any) {
 
 const SEBI = { sourceUrl: 'https://www.sebi.gov.in', sourceName: 'SEBI' };
 const RBI = { sourceUrl: 'https://www.rbi.org.in', sourceName: 'RBI (FEMA)' };
-const ITD = { sourceUrl: 'https://www.incometaxindia.gov.in', sourceName: 'Income Tax Department, India' };
+const ITD = {
+  sourceUrl: 'https://www.incometaxindia.gov.in',
+  sourceName: 'Income Tax Department, India',
+};
 const MOF = { sourceUrl: 'https://www.finmin.gov.in', sourceName: 'Ministry of Finance, India' };
 
 const ILL = 'ILLUSTRATIVE';
 const VER = 'VERIFIED';
 const PEN = 'PENDING';
 
-export function buildComprehensiveRules(
-  categoryMap: Map<string, string>
-): StoreEligibilityRule[] {
+export function buildComprehensiveRules(categoryMap: Map<string, string>): StoreEligibilityRule[] {
   const rules: StoreEligibilityRule[] = [];
 
   const add = (catSlug: string, overrides: RuleOverride) => {
@@ -194,165 +201,326 @@ export function buildComprehensiveRules(
   // INDIAN MUTUAL FUNDS
   // =========================================================================
   const mfBase = {
-    conditionsDetail: 'Applies to SEBI-registered mutual funds. Fund-house onboarding policies vary by country.',
+    conditionsDetail:
+      'Applies to SEBI-registered mutual funds. Fund-house onboarding policies vary by country.',
     accountType: 'NRE or NRO account',
     documentation: 'PAN, passport, overseas address proof, KYC',
     repatriation: 'Repatriable if invested on an NRE basis; NRO proceeds subject to limits',
-    taxConsiderations: 'Indian capital-gains tax may apply; TDS may be deducted on redemption. Tax in country of residence should be verified separately.',
+    taxConsiderations:
+      'Indian capital-gains tax may apply; TDS may be deducted on redemption. Tax in country of residence should be verified separately.',
   };
 
   add('indian-mutual-funds', {
-    ruleId: 'MF-US-001', jurisdiction: 'United States', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','United States'), cond('investorCategory','eq','NRI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-US-001',
+    jurisdiction: 'United States',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United States'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'U.S.-based NRIs may generally invest in Indian mutual funds through an NRE or NRO account. Some fund houses apply additional FATCA/CRS documentation for U.S. persons and may restrict certain schemes.',
-    exceptions: 'Certain fund houses may decline U.S. persons under FATCA-related policies; confirm with the fund house.',
+    explanation:
+      'U.S.-based NRIs may generally invest in Indian mutual funds through an NRE or NRO account. Some fund houses apply additional FATCA/CRS documentation for U.S. persons and may restrict certain schemes.',
+    exceptions:
+      'Certain fund houses may decline U.S. persons under FATCA-related policies; confirm with the fund house.',
     ...mfBase,
-    ...SEBI, reviewStatus: ILL,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-US-OCI-001', jurisdiction: 'United States', investorCategory: 'OCI',
-    conditions: [cond('countryOfResidence','eq','United States'), cond('investorCategory','eq','OCI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-US-OCI-001',
+    jurisdiction: 'United States',
+    investorCategory: 'OCI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United States'),
+      cond('investorCategory', 'eq', 'OCI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'U.S.-based OCI cardholders are generally treated similarly to NRIs for Indian mutual fund investment, subject to fund-house and KYC requirements.',
+    explanation:
+      'U.S.-based OCI cardholders are generally treated similarly to NRIs for Indian mutual fund investment, subject to fund-house and KYC requirements.',
     exceptions: 'FATCA/CRS documentation may be required; some fund houses restrict U.S. persons.',
-    ...mfBase, ...SEBI, reviewStatus: ILL,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-UK-001', jurisdiction: 'United Kingdom', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','United Kingdom'), cond('investorCategory','eq','NRI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-UK-001',
+    jurisdiction: 'United Kingdom',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United Kingdom'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'UK-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
+    explanation:
+      'UK-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
     exceptions: 'Some fund houses may have country-specific onboarding policies.',
-    ...mfBase, ...SEBI, reviewStatus: ILL,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-AE-001', jurisdiction: 'United Arab Emirates', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','United Arab Emirates'), cond('investorCategory','eq','NRI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-AE-001',
+    jurisdiction: 'United Arab Emirates',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United Arab Emirates'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'UAE-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
+    explanation:
+      'UAE-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
     exceptions: 'Fund-house onboarding policies vary.',
-    ...mfBase, ...SEBI, reviewStatus: ILL,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-CA-001', jurisdiction: 'Canada', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','Canada'), cond('investorCategory','eq','NRI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-CA-001',
+    jurisdiction: 'Canada',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'Canada'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'VERIFICATION_REQUIRED',
-    explanation: 'Canadian-resident NRIs may invest in Indian mutual funds, but some fund houses apply additional due diligence for Canadian residents under CRS; verification with the fund house is recommended.',
+    explanation:
+      'Canadian-resident NRIs may invest in Indian mutual funds, but some fund houses apply additional due diligence for Canadian residents under CRS; verification with the fund house is recommended.',
     exceptions: 'Some fund houses restrict Canadian residents; confirm scheme-by-scheme.',
-    ...mfBase, ...SEBI, reviewStatus: ILL,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-AU-001', jurisdiction: 'Australia', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','Australia'), cond('investorCategory','eq','NRI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-AU-001',
+    jurisdiction: 'Australia',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'Australia'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'Australia-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
+    explanation:
+      'Australia-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
     exceptions: 'Fund-house policies vary.',
-    ...mfBase, ...SEBI, reviewStatus: ILL,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-SG-001', jurisdiction: 'Singapore', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','Singapore'), cond('investorCategory','eq','NRI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-SG-001',
+    jurisdiction: 'Singapore',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'Singapore'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'Singapore-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
+    explanation:
+      'Singapore-based NRIs may generally invest in Indian mutual funds through NRE/NRO accounts.',
     exceptions: 'Fund-house policies vary.',
-    ...mfBase, ...SEBI, reviewStatus: ILL,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-OTHER-001', jurisdiction: 'Other', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','Other'), cond('investorCategory','eq','NRI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-OTHER-001',
+    jurisdiction: 'Other',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'Other'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'INSUFFICIENT_INFO',
-    explanation: 'For countries not explicitly covered, eligibility cannot be determined from the rules on file. Confirm with the fund house and your bank.',
+    explanation:
+      'For countries not explicitly covered, eligibility cannot be determined from the rules on file. Confirm with the fund house and your bank.',
     exceptions: 'None — treat as insufficient information.',
-    ...mfBase, ...SEBI, reviewStatus: PEN,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: PEN,
   });
   add('indian-mutual-funds', {
-    ruleId: 'MF-OCI-ANY-001', jurisdiction: '*', investorCategory: 'OCI',
-    conditions: [cond('investorCategory','eq','OCI'), cond('category','eq','Indian Mutual Funds')],
+    ruleId: 'MF-OCI-ANY-001',
+    jurisdiction: '*',
+    investorCategory: 'OCI',
+    conditions: [
+      cond('investorCategory', 'eq', 'OCI'),
+      cond('category', 'eq', 'Indian Mutual Funds'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'OCI cardholders are generally treated similarly to NRIs for Indian mutual fund investment, subject to fund-house and KYC requirements.',
+    explanation:
+      'OCI cardholders are generally treated similarly to NRIs for Indian mutual fund investment, subject to fund-house and KYC requirements.',
     exceptions: 'Fund-house onboarding policies vary by country.',
-    ...mfBase, ...SEBI, reviewStatus: ILL,
+    ...mfBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
 
   // =========================================================================
   // LISTED INDIAN EQUITIES
   // =========================================================================
   const eqBase = {
-    conditionsDetail: 'Applies to NSE/BSE-listed equities. PIS (Portfolio Investment Scheme) approval may be required for repatriable investments.',
+    conditionsDetail:
+      'Applies to NSE/BSE-listed equities. PIS (Portfolio Investment Scheme) approval may be required for repatriable investments.',
     accountType: 'NRE (repatriable) or NRO (non-repatriable) + NRI demat & trading account',
-    documentation: 'PAN, PIS permission letter (where applicable), passport, overseas address proof, FATCA declaration',
+    documentation:
+      'PAN, PIS permission letter (where applicable), passport, overseas address proof, FATCA declaration',
     repatriation: 'Repatriable via NRE/PIS route; non-repatriable via NRO',
-    taxConsiderations: 'Capital-gains tax in India may apply; TDS may apply on sale. Tax in country of residence may also apply.',
+    taxConsiderations:
+      'Capital-gains tax in India may apply; TDS may apply on sale. Tax in country of residence may also apply.',
   };
 
   add('listed-indian-equities', {
-    ruleId: 'EQ-US-001', jurisdiction: 'United States', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','United States'), cond('investorCategory','eq','NRI'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-US-001',
+    jurisdiction: 'United States',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United States'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'VERIFICATION_REQUIRED',
-    explanation: 'U.S.-based NRIs can invest in listed Indian equities through an NRI demat and trading account. PIS approval and additional disclosures may apply; confirmation with a SEBI-registered broker is required.',
+    explanation:
+      'U.S.-based NRIs can invest in listed Indian equities through an NRI demat and trading account. PIS approval and additional disclosures may apply; confirmation with a SEBI-registered broker is required.',
     exceptions: 'PIS requirements and broker onboarding policies vary.',
-    ...eqBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...eqBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('listed-indian-equities', {
-    ruleId: 'EQ-UK-001', jurisdiction: 'United Kingdom', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','United Kingdom'), cond('investorCategory','eq','NRI'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-UK-001',
+    jurisdiction: 'United Kingdom',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United Kingdom'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'UK-based NRIs may invest in listed Indian equities through an NRI demat and trading account. PIS may apply for repatriable investments.',
+    explanation:
+      'UK-based NRIs may invest in listed Indian equities through an NRI demat and trading account. PIS may apply for repatriable investments.',
     exceptions: 'Broker onboarding policies vary.',
-    ...eqBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...eqBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('listed-indian-equities', {
-    ruleId: 'EQ-AE-001', jurisdiction: 'United Arab Emirates', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','United Arab Emirates'), cond('investorCategory','eq','NRI'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-AE-001',
+    jurisdiction: 'United Arab Emirates',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United Arab Emirates'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'UAE-based NRIs may invest in listed Indian equities through an NRI demat and trading account.',
+    explanation:
+      'UAE-based NRIs may invest in listed Indian equities through an NRI demat and trading account.',
     exceptions: 'Broker onboarding policies vary.',
-    ...eqBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...eqBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('listed-indian-equities', {
-    ruleId: 'EQ-CA-001', jurisdiction: 'Canada', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','Canada'), cond('investorCategory','eq','NRI'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-CA-001',
+    jurisdiction: 'Canada',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'Canada'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'VERIFICATION_REQUIRED',
-    explanation: 'Canadian-resident NRIs may invest in listed Indian equities, subject to broker due diligence and CRS; verification with a SEBI-registered broker is required.',
+    explanation:
+      'Canadian-resident NRIs may invest in listed Indian equities, subject to broker due diligence and CRS; verification with a SEBI-registered broker is required.',
     exceptions: 'Some brokers may restrict Canadian residents.',
-    ...eqBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...eqBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('listed-indian-equities', {
-    ruleId: 'EQ-AU-001', jurisdiction: 'Australia', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','Australia'), cond('investorCategory','eq','NRI'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-AU-001',
+    jurisdiction: 'Australia',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'Australia'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'Australia-based NRIs may invest in listed Indian equities through an NRI demat and trading account.',
+    explanation:
+      'Australia-based NRIs may invest in listed Indian equities through an NRI demat and trading account.',
     exceptions: 'Broker policies vary.',
-    ...eqBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...eqBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('listed-indian-equities', {
-    ruleId: 'EQ-SG-001', jurisdiction: 'Singapore', investorCategory: 'NRI',
-    conditions: [cond('countryOfResidence','eq','Singapore'), cond('investorCategory','eq','NRI'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-SG-001',
+    jurisdiction: 'Singapore',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'Singapore'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'Singapore-based NRIs may invest in listed Indian equities through an NRI demat and trading account.',
+    explanation:
+      'Singapore-based NRIs may invest in listed Indian equities through an NRI demat and trading account.',
     exceptions: 'Broker policies vary.',
-    ...eqBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...eqBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('listed-indian-equities', {
-    ruleId: 'EQ-OTHER-RESTRICTED-001', jurisdiction: '*', investorCategory: 'OTHER',
-    conditions: [cond('investorCategory','eq','OTHER'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-OTHER-RESTRICTED-001',
+    jurisdiction: '*',
+    investorCategory: 'OTHER',
+    conditions: [
+      cond('investorCategory', 'eq', 'OTHER'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'POTENTIAL_RESTRICTION',
-    explanation: 'Investors who are neither NRI nor OCI may face restrictions on directly investing in listed Indian equities. Eligibility is uncertain and requires verification.',
+    explanation:
+      'Investors who are neither NRI nor OCI may face restrictions on directly investing in listed Indian equities. Eligibility is uncertain and requires verification.',
     exceptions: 'None — treat as potentially restricted.',
     accountType: 'Case-specific',
     documentation: 'Case-specific documentation',
     repatriation: 'Case-specific',
     taxConsiderations: 'Case-specific',
-    ...RBI, reviewStatus: ILL,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('listed-indian-equities', {
-    ruleId: 'EQ-OCI-ANY-001', jurisdiction: '*', investorCategory: 'OCI',
-    conditions: [cond('investorCategory','eq','OCI'), cond('category','eq','Listed Indian Equities')],
+    ruleId: 'EQ-OCI-ANY-001',
+    jurisdiction: '*',
+    investorCategory: 'OCI',
+    conditions: [
+      cond('investorCategory', 'eq', 'OCI'),
+      cond('category', 'eq', 'Listed Indian Equities'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'OCI cardholders are generally treated similarly to NRIs for listed Indian equity investment, subject to demat and PIS requirements.',
+    explanation:
+      'OCI cardholders are generally treated similarly to NRIs for listed Indian equity investment, subject to demat and PIS requirements.',
     exceptions: 'PIS and broker policies vary by country.',
-    ...eqBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...eqBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
 
   // =========================================================================
@@ -361,30 +529,56 @@ export function buildComprehensiveRules(
   const etfBase = {
     conditionsDetail: 'Applies to index and commodity ETFs listed on Indian exchanges.',
     accountType: 'NRE/NRO account + NRI demat account',
-    documentation: 'PAN, passport, overseas address proof, KYC, FATCA declaration (where applicable)',
+    documentation:
+      'PAN, passport, overseas address proof, KYC, FATCA declaration (where applicable)',
     repatriation: 'Same as listed equities — depends on NRE/NRO basis',
     taxComplexity: 'Moderate',
   };
 
-  for (const c of ['United States','United Kingdom','United Arab Emirates','Canada','Australia','Singapore']) {
+  for (const c of [
+    'United States',
+    'United Kingdom',
+    'United Arab Emirates',
+    'Canada',
+    'Australia',
+    'Singapore',
+  ]) {
     const isUS = c === 'United States';
     const isCA = c === 'Canada';
     add('exchange-traded-funds', {
-      ruleId: `ETF-${c.replace(/ /g,'')}-001`, jurisdiction: c, investorCategory: 'NRI',
-      conditions: [cond('countryOfResidence','eq',c), cond('investorCategory','eq','NRI'), cond('category','eq','Exchange-Traded Funds (ETFs)')],
+      ruleId: `ETF-${c.replace(/ /g, '')}-001`,
+      jurisdiction: c,
+      investorCategory: 'NRI',
+      conditions: [
+        cond('countryOfResidence', 'eq', c),
+        cond('investorCategory', 'eq', 'NRI'),
+        cond('category', 'eq', 'Exchange-Traded Funds (ETFs)'),
+      ],
       outcome: isUS || isCA ? 'VERIFICATION_REQUIRED' : 'POTENTIALLY_ELIGIBLE',
       explanation: `${c}-based NRIs may generally invest in Indian ETFs through an NRI demat and trading account.${isUS || isCA ? ' Additional due diligence may apply; broker verification recommended.' : ''}`,
       exceptions: 'Broker onboarding policies vary.',
-      ...etfBase, ...SEBI, ...RBI, reviewStatus: ILL,
+      ...etfBase,
+      ...SEBI,
+      ...RBI,
+      reviewStatus: ILL,
     });
   }
   add('exchange-traded-funds', {
-    ruleId: 'ETF-OCI-ANY-001', jurisdiction: '*', investorCategory: 'OCI',
-    conditions: [cond('investorCategory','eq','OCI'), cond('category','eq','Exchange-Traded Funds (ETFs)')],
+    ruleId: 'ETF-OCI-ANY-001',
+    jurisdiction: '*',
+    investorCategory: 'OCI',
+    conditions: [
+      cond('investorCategory', 'eq', 'OCI'),
+      cond('category', 'eq', 'Exchange-Traded Funds (ETFs)'),
+    ],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'OCI cardholders may generally invest in Indian ETFs through an NRI demat and trading account.',
+    explanation:
+      'OCI cardholders may generally invest in Indian ETFs through an NRI demat and trading account.',
     exceptions: 'Broker policies vary by country.',
-    ...etfBase, ...SEBI, ...RBI, reviewStatus: ILL,
+    ...etfBase,
+    ...SEBI,
+    ...RBI,
+    reviewStatus: ILL,
   });
 
   // =========================================================================
@@ -401,12 +595,25 @@ export function buildComprehensiveRules(
     const isUS = c === 'United States';
     const isCA = c === 'Canada';
     add('ipos', {
-      ruleId: `IPO-${c.replace(/ /g,'')}-001`, jurisdiction: c, investorCategory: 'NRI',
-      conditions: [cond('countryOfResidence','eq',c), cond('investorCategory','eq','NRI'), cond('category','eq','IPOs')],
-      outcome: isUS || isCA || c === 'Other' ? (c === 'Other' ? 'INSUFFICIENT_INFO' : 'VERIFICATION_REQUIRED') : 'POTENTIALLY_ELIGIBLE',
+      ruleId: `IPO-${c.replace(/ /g, '')}-001`,
+      jurisdiction: c,
+      investorCategory: 'NRI',
+      conditions: [
+        cond('countryOfResidence', 'eq', c),
+        cond('investorCategory', 'eq', 'NRI'),
+        cond('category', 'eq', 'IPOs'),
+      ],
+      outcome:
+        isUS || isCA || c === 'Other'
+          ? c === 'Other'
+            ? 'INSUFFICIENT_INFO'
+            : 'VERIFICATION_REQUIRED'
+          : 'POTENTIALLY_ELIGIBLE',
       explanation: `${c}-based NRIs may apply for Indian IPOs through an NRE/NRO demat account using ASBA.${isUS || isCA ? ' Additional verification with the broker/intermediary is recommended.' : c === 'Other' ? ' Eligibility cannot be determined from rules on file.' : ''}`,
       exceptions: 'Some issuers/intermediaries may have country-specific restrictions.',
-      ...ipoBase, ...SEBI, reviewStatus: ILL,
+      ...ipoBase,
+      ...SEBI,
+      reviewStatus: ILL,
     });
   }
 
@@ -414,20 +621,32 @@ export function buildComprehensiveRules(
   // GOVERNMENT SECURITIES AND BONDS
   // =========================================================================
   const gsecBase = {
-    conditionsDetail: 'Applies to Indian government bonds and securities (including Sovereign Gold Bonds where eligible).',
+    conditionsDetail:
+      'Applies to Indian government bonds and securities (including Sovereign Gold Bonds where eligible).',
     accountType: 'NRE/NRO account + demat account (where held in demat)',
     documentation: 'PAN, passport, overseas address proof, KYC',
     repatriation: 'Varies by instrument and route under FEMA',
-    taxConsiderations: 'Interest income is taxable in India; capital-gains rules depend on instrument and holding period.',
+    taxConsiderations:
+      'Interest income is taxable in India; capital-gains rules depend on instrument and holding period.',
   };
   for (const c of COUNTRIES) {
     add('government-securities-bonds', {
-      ruleId: `GSEC-${c.replace(/ /g,'')}-001`, jurisdiction: c, investorCategory: 'NRI',
-      conditions: [cond('countryOfResidence','eq',c), cond('investorCategory','eq','NRI'), cond('category','eq','Government Securities and Bonds')],
+      ruleId: `GSEC-${c.replace(/ /g, '')}-001`,
+      jurisdiction: c,
+      investorCategory: 'NRI',
+      conditions: [
+        cond('countryOfResidence', 'eq', c),
+        cond('investorCategory', 'eq', 'NRI'),
+        cond('category', 'eq', 'Government Securities and Bonds'),
+      ],
       outcome: c === 'Other' ? 'INSUFFICIENT_INFO' : 'POTENTIALLY_ELIGIBLE',
       explanation: `${c}-based NRIs may generally invest in Indian government securities subject to FEMA and RBI limits.`,
-      exceptions: 'Certain instruments (e.g., Sovereign Gold Bonds) may not be available to NRIs; verify instrument-specific eligibility.',
-      ...gsecBase, ...RBI, ...SEBI, reviewStatus: ILL,
+      exceptions:
+        'Certain instruments (e.g., Sovereign Gold Bonds) may not be available to NRIs; verify instrument-specific eligibility.',
+      ...gsecBase,
+      ...RBI,
+      ...SEBI,
+      reviewStatus: ILL,
     });
   }
 
@@ -439,72 +658,109 @@ export function buildComprehensiveRules(
     accountType: 'NRE, NRO, or FCNR account',
     documentation: 'PAN, passport, overseas address proof, KYC',
     repatriation: 'NRE/FCNR deposits are repatriable; NRO deposits subject to repatriation limits',
-    taxConsiderations: 'NRE interest is generally tax-exempt in India; NRO interest is taxable and may be subject to TDS.',
+    taxConsiderations:
+      'NRE interest is generally tax-exempt in India; NRO interest is taxable and may be subject to TDS.',
   };
   for (const c of COUNTRIES) {
     add('fixed-deposits', {
-      ruleId: `FD-${c.replace(/ /g,'')}-001`, jurisdiction: c, investorCategory: 'NRI',
-      conditions: [cond('countryOfResidence','eq',c), cond('investorCategory','eq','NRI'), cond('category','eq','Fixed Deposits')],
+      ruleId: `FD-${c.replace(/ /g, '')}-001`,
+      jurisdiction: c,
+      investorCategory: 'NRI',
+      conditions: [
+        cond('countryOfResidence', 'eq', c),
+        cond('investorCategory', 'eq', 'NRI'),
+        cond('category', 'eq', 'Fixed Deposits'),
+      ],
       outcome: 'POTENTIALLY_ELIGIBLE',
       explanation: `${c}-based NRIs may generally open NRE, NRO, or FCNR fixed deposits with Indian banks, subject to the bank's KYC and documentation requirements.`,
       exceptions: 'Bank-specific policies and minimum deposit amounts apply.',
-      ...fdBase, ...RBI, reviewStatus: ILL,
+      ...fdBase,
+      ...RBI,
+      reviewStatus: ILL,
     });
   }
   add('fixed-deposits', {
-    ruleId: 'FD-OCI-ANY-001', jurisdiction: '*', investorCategory: 'OCI',
-    conditions: [cond('investorCategory','eq','OCI'), cond('category','eq','Fixed Deposits')],
+    ruleId: 'FD-OCI-ANY-001',
+    jurisdiction: '*',
+    investorCategory: 'OCI',
+    conditions: [cond('investorCategory', 'eq', 'OCI'), cond('category', 'eq', 'Fixed Deposits')],
     outcome: 'POTENTIALLY_ELIGIBLE',
-    explanation: 'OCI cardholders may generally open NRE, NRO, or FCNR fixed deposits with Indian banks.',
+    explanation:
+      'OCI cardholders may generally open NRE, NRO, or FCNR fixed deposits with Indian banks.',
     exceptions: 'Bank-specific policies apply.',
-    ...fdBase, ...RBI, reviewStatus: ILL,
+    ...fdBase,
+    ...RBI,
+    reviewStatus: ILL,
   });
 
   // =========================================================================
   // REAL ESTATE
   // =========================================================================
   const reBase = {
-    conditionsDetail: 'Applies to residential and commercial immovable property in India. Agricultural land, plantation property, and farmhouses are generally restricted.',
+    conditionsDetail:
+      'Applies to residential and commercial immovable property in India. Agricultural land, plantation property, and farmhouses are generally restricted.',
     accountType: 'NRO account typically used for sale proceeds',
-    documentation: 'PAN, passport, OCI card (if applicable), address proof, sale agreement, bank certificates',
+    documentation:
+      'PAN, passport, OCI card (if applicable), address proof, sale agreement, bank certificates',
     repatriation: 'Repatriation of sale proceeds is subject to FEMA limits and documentation',
-    taxConsiderations: 'Capital-gains tax and TDS on sale of property by NRI may apply; verify with a tax professional.',
+    taxConsiderations:
+      'Capital-gains tax and TDS on sale of property by NRI may apply; verify with a tax professional.',
   };
   add('real-estate', {
-    ruleId: 'RE-ANY-001', jurisdiction: '*', investorCategory: 'NRI',
-    conditions: [cond('investorCategory','eq','NRI'), cond('category','eq','Real Estate')],
+    ruleId: 'RE-ANY-001',
+    jurisdiction: '*',
+    investorCategory: 'NRI',
+    conditions: [cond('investorCategory', 'eq', 'NRI'), cond('category', 'eq', 'Real Estate')],
     outcome: 'VERIFICATION_REQUIRED',
-    explanation: 'NRIs may generally purchase residential and commercial property in India, but purchase of agricultural land, plantation property, or a farmhouse is restricted. Sale proceeds repatriation is subject to FEMA conditions.',
+    explanation:
+      'NRIs may generally purchase residential and commercial property in India, but purchase of agricultural land, plantation property, or a farmhouse is restricted. Sale proceeds repatriation is subject to FEMA conditions.',
     exceptions: 'Agricultural land/plantation/farmhouse generally not permitted for NRI purchase.',
-    ...reBase, ...RBI, reviewStatus: ILL,
+    ...reBase,
+    ...RBI,
+    reviewStatus: ILL,
   });
   add('real-estate', {
-    ruleId: 'RE-OCI-001', jurisdiction: '*', investorCategory: 'OCI',
-    conditions: [cond('investorCategory','eq','OCI'), cond('category','eq','Real Estate')],
+    ruleId: 'RE-OCI-001',
+    jurisdiction: '*',
+    investorCategory: 'OCI',
+    conditions: [cond('investorCategory', 'eq', 'OCI'), cond('category', 'eq', 'Real Estate')],
     outcome: 'VERIFICATION_REQUIRED',
-    explanation: 'OCI cardholders may generally purchase residential and commercial property in India, subject to similar restrictions on agricultural land.',
+    explanation:
+      'OCI cardholders may generally purchase residential and commercial property in India, subject to similar restrictions on agricultural land.',
     exceptions: 'Agricultural land/plantation/farmhouse generally not permitted.',
-    ...reBase, ...RBI, reviewStatus: ILL,
+    ...reBase,
+    ...RBI,
+    reviewStatus: ILL,
   });
 
   // =========================================================================
   // REITS AND INVITS
   // =========================================================================
   const reitBase = {
-    conditionsDetail: 'Applies to SEBI-registered Real Estate Investment Trusts and Infrastructure Investment Trusts listed on Indian exchanges.',
+    conditionsDetail:
+      'Applies to SEBI-registered Real Estate Investment Trusts and Infrastructure Investment Trusts listed on Indian exchanges.',
     accountType: 'NRE/NRO account + NRI demat account',
     documentation: 'PAN, passport, overseas address proof, KYC, demat account details',
     repatriation: 'Varies by structure; depends on NRE/NRO basis',
-    taxConsiderations: 'Tax treatment of REIT/InvIT distributions and capital gains can be complex; verify with a tax professional.',
+    taxConsiderations:
+      'Tax treatment of REIT/InvIT distributions and capital gains can be complex; verify with a tax professional.',
   };
   for (const c of COUNTRIES) {
     add('reits-invits', {
-      ruleId: `REIT-${c.replace(/ /g,'')}-001`, jurisdiction: c, investorCategory: 'NRI',
-      conditions: [cond('countryOfResidence','eq',c), cond('investorCategory','eq','NRI'), cond('category','eq','REITs and InvITs')],
+      ruleId: `REIT-${c.replace(/ /g, '')}-001`,
+      jurisdiction: c,
+      investorCategory: 'NRI',
+      conditions: [
+        cond('countryOfResidence', 'eq', c),
+        cond('investorCategory', 'eq', 'NRI'),
+        cond('category', 'eq', 'REITs and InvITs'),
+      ],
       outcome: c === 'Other' ? 'INSUFFICIENT_INFO' : 'POTENTIALLY_ELIGIBLE',
       explanation: `${c}-based NRIs may generally invest in SEBI-registered REITs and InvITs through an NRI demat and trading account.`,
       exceptions: 'Trust-specific eligibility and broker policies vary.',
-      ...reitBase, ...SEBI, reviewStatus: ILL,
+      ...reitBase,
+      ...SEBI,
+      reviewStatus: ILL,
     });
   }
 
@@ -512,55 +768,135 @@ export function buildComprehensiveRules(
   // GIFT CITY
   // =========================================================================
   const gftBase = {
-    conditionsDetail: 'Applies to IFSC-regulated investment products at GIFT City (Gujarat International Finance Tec-City).',
+    conditionsDetail:
+      'Applies to IFSC-regulated investment products at GIFT City (Gujarat International Finance Tec-City).',
     accountType: 'IFSC-compliant account + intermediary KYC',
     documentation: 'KYC as per IFSC-regulated intermediary, passport, address proof',
     repatriation: 'Subject to IFSC and FEMA rules',
-    taxConsiderations: 'Tax treatment of IFSC products may differ from domestic investments; verify with a tax professional.',
+    taxConsiderations:
+      'Tax treatment of IFSC products may differ from domestic investments; verify with a tax professional.',
   };
   add('gift-city-products', {
-    ruleId: 'GFT-ANY-001', jurisdiction: '*', investorCategory: 'NRI',
-    conditions: [cond('investorCategory','eq','NRI'), cond('category','eq','GIFT City Investment Products')],
+    ruleId: 'GFT-ANY-001',
+    jurisdiction: '*',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'GIFT City Investment Products'),
+    ],
     outcome: 'VERIFICATION_REQUIRED',
-    explanation: 'GIFT City IFSC products are regulated separately from domestic Indian investments. Eligibility, KYC, and repatriation depend on the specific product and IFSC framework.',
+    explanation:
+      'GIFT City IFSC products are regulated separately from domestic Indian investments. Eligibility, KYC, and repatriation depend on the specific product and IFSC framework.',
     exceptions: 'Product-specific eligibility varies.',
-    ...gftBase, ...SEBI, reviewStatus: ILL,
+    ...gftBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
   add('gift-city-products', {
-    ruleId: 'GFT-OCI-001', jurisdiction: '*', investorCategory: 'OCI',
-    conditions: [cond('investorCategory','eq','OCI'), cond('category','eq','GIFT City Investment Products')],
+    ruleId: 'GFT-OCI-001',
+    jurisdiction: '*',
+    investorCategory: 'OCI',
+    conditions: [
+      cond('investorCategory', 'eq', 'OCI'),
+      cond('category', 'eq', 'GIFT City Investment Products'),
+    ],
     outcome: 'VERIFICATION_REQUIRED',
-    explanation: 'OCI cardholders may invest in GIFT City IFSC products subject to IFSC framework and product-specific eligibility.',
+    explanation:
+      'OCI cardholders may invest in GIFT City IFSC products subject to IFSC framework and product-specific eligibility.',
     exceptions: 'Product-specific eligibility varies.',
-    ...gftBase, ...SEBI, reviewStatus: ILL,
+    ...gftBase,
+    ...SEBI,
+    reviewStatus: ILL,
   });
 
   return rules;
 }
 
 export const REGULATORY_SOURCES: SourceInput[] = [
-  { name: 'Reserve Bank of India (RBI)', url: 'https://www.rbi.org.in', type: 'RBI', country: 'India', isReliable: true },
-  { name: 'Securities and Exchange Board of India (SEBI)', url: 'https://www.sebi.gov.in', type: 'SEBI', country: 'India', isReliable: true },
-  { name: 'Income Tax Department, India', url: 'https://www.incometaxindia.gov.in', type: 'Income Tax', country: 'India', isReliable: true },
-  { name: 'Ministry of Finance, India', url: 'https://www.finmin.gov.in', type: 'Ministry of Finance', country: 'India', isReliable: true },
-  { name: 'National Stock Exchange of India (NSE)', url: 'https://www.nseindia.com', type: 'Stock Exchange', country: 'India', isReliable: true },
-  { name: 'BSE Limited', url: 'https://www.bseindia.com', type: 'Stock Exchange', country: 'India', isReliable: true },
-  { name: 'AMFI (Association of Mutual Funds in India)', url: 'https://www.amfiindia.com', type: 'Industry Body', country: 'India', isReliable: true },
-  { name: 'GIFT City IFSC Authority', url: 'https://www.ifscindia.com', type: 'IFSC Authority', country: 'India', isReliable: true },
-  { name: 'NSDL', url: 'https://www.nsdl.co.in', type: 'Depository', country: 'India', isReliable: true },
-  { name: 'CDSL', url: 'https://www.cdslindia.com', type: 'Depository', country: 'India', isReliable: true },
+  {
+    name: 'Reserve Bank of India (RBI)',
+    url: 'https://www.rbi.org.in',
+    type: 'RBI',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'Securities and Exchange Board of India (SEBI)',
+    url: 'https://www.sebi.gov.in',
+    type: 'SEBI',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'Income Tax Department, India',
+    url: 'https://www.incometaxindia.gov.in',
+    type: 'Income Tax',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'Ministry of Finance, India',
+    url: 'https://www.finmin.gov.in',
+    type: 'Ministry of Finance',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'National Stock Exchange of India (NSE)',
+    url: 'https://www.nseindia.com',
+    type: 'Stock Exchange',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'BSE Limited',
+    url: 'https://www.bseindia.com',
+    type: 'Stock Exchange',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'AMFI (Association of Mutual Funds in India)',
+    url: 'https://www.amfiindia.com',
+    type: 'Industry Body',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'GIFT City IFSC Authority',
+    url: 'https://www.ifscindia.com',
+    type: 'IFSC Authority',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'NSDL',
+    url: 'https://www.nsdl.co.in',
+    type: 'Depository',
+    country: 'India',
+    isReliable: true,
+  },
+  {
+    name: 'CDSL',
+    url: 'https://www.cdslindia.com',
+    type: 'Depository',
+    country: 'India',
+    isReliable: true,
+  },
 ];
 
 export const REGULATORY_UPDATES = [
   {
     title: 'Demo platform launched — illustrative regulatory data',
-    summary: 'This demonstration version uses illustrative eligibility rules marked as "ILLUSTRATIVE." They are not current law. Administrators should replace them with verified RBI/SEBI rules before production use.',
+    summary:
+      'This demonstration version uses illustrative eligibility rules marked as "ILLUSTRATIVE." They are not current law. Administrators should replace them with verified RBI/SEBI rules before production use.',
     sourceUrl: null,
     isActive: true,
   },
   {
     title: 'Comprehensive country×category rules added',
-    summary: 'Eligibility rules now cover United States, United Kingdom, UAE, Canada, Australia, Singapore, and Other across all nine investment categories. Rules marked ILLUSTRATIVE remain demonstration data.',
+    summary:
+      'Eligibility rules now cover United States, United Kingdom, UAE, Canada, Australia, Singapore, and Other across all nine investment categories. Rules marked ILLUSTRATIVE remain demonstration data.',
     sourceUrl: null,
     isActive: true,
   },
