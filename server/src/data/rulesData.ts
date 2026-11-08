@@ -160,9 +160,10 @@ function rule(overrides: RuleOverride): StoreEligibilityRule {
     taxConsiderations: overrides.taxConsiderations ?? null,
     sourceUrl: overrides.sourceUrl ?? null,
     sourceName: overrides.sourceName ?? null,
-    effectiveDate: overrides.effectiveDate ?? null,
+    effectiveFrom: overrides.effectiveFrom ?? null,
+    effectiveTo: overrides.effectiveTo ?? null,
     lastVerified: overrides.lastVerified ?? null,
-    reviewStatus: overrides.reviewStatus ?? 'ILLUSTRATIVE',
+    status: overrides.status ?? 'DRAFT',
     version: overrides.version ?? 1,
     isActive: overrides.isActive ?? true,
     createdAt: new Date('2024-01-01'),
@@ -226,7 +227,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
       'Certain fund houses may decline U.S. persons under FATCA-related policies; confirm with the fund house.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-US-OCI-001',
@@ -243,7 +244,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'FATCA/CRS documentation may be required; some fund houses restrict U.S. persons.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-UK-001',
@@ -260,7 +261,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Some fund houses may have country-specific onboarding policies.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-AE-001',
@@ -277,7 +278,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Fund-house onboarding policies vary.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-CA-001',
@@ -294,7 +295,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Some fund houses restrict Canadian residents; confirm scheme-by-scheme.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-AU-001',
@@ -311,7 +312,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Fund-house policies vary.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-SG-001',
@@ -328,7 +329,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Fund-house policies vary.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-OTHER-001',
@@ -345,7 +346,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'None — treat as insufficient information.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: PEN,
+    status: 'PENDING',
   });
   add('indian-mutual-funds', {
     ruleId: 'MF-OCI-ANY-001',
@@ -361,7 +362,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Fund-house onboarding policies vary by country.',
     ...mfBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
 
   // =========================================================================
@@ -394,7 +395,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...eqBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('listed-indian-equities', {
     ruleId: 'EQ-UK-001',
@@ -412,7 +413,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...eqBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('listed-indian-equities', {
     ruleId: 'EQ-AE-001',
@@ -430,7 +431,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...eqBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('listed-indian-equities', {
     ruleId: 'EQ-CA-001',
@@ -448,7 +449,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...eqBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('listed-indian-equities', {
     ruleId: 'EQ-AU-001',
@@ -466,7 +467,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...eqBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('listed-indian-equities', {
     ruleId: 'EQ-SG-001',
@@ -484,7 +485,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...eqBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('listed-indian-equities', {
     ruleId: 'EQ-OTHER-RESTRICTED-001',
@@ -503,7 +504,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     repatriation: 'Case-specific',
     taxConsiderations: 'Case-specific',
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('listed-indian-equities', {
     ruleId: 'EQ-OCI-ANY-001',
@@ -520,7 +521,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...eqBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
 
   // =========================================================================
@@ -560,7 +561,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
       ...etfBase,
       ...SEBI,
       ...RBI,
-      reviewStatus: ILL,
+      status: 'PUBLISHED',
     });
   }
   add('exchange-traded-funds', {
@@ -578,7 +579,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     ...etfBase,
     ...SEBI,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
 
   // =========================================================================
@@ -613,7 +614,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
       exceptions: 'Some issuers/intermediaries may have country-specific restrictions.',
       ...ipoBase,
       ...SEBI,
-      reviewStatus: ILL,
+      status: 'PUBLISHED',
     });
   }
 
@@ -646,7 +647,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
       ...gsecBase,
       ...RBI,
       ...SEBI,
-      reviewStatus: ILL,
+      status: 'PUBLISHED',
     });
   }
 
@@ -676,7 +677,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
       exceptions: 'Bank-specific policies and minimum deposit amounts apply.',
       ...fdBase,
       ...RBI,
-      reviewStatus: ILL,
+      status: 'PUBLISHED',
     });
   }
   add('fixed-deposits', {
@@ -690,7 +691,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Bank-specific policies apply.',
     ...fdBase,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
 
   // =========================================================================
@@ -717,7 +718,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Agricultural land/plantation/farmhouse generally not permitted for NRI purchase.',
     ...reBase,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('real-estate', {
     ruleId: 'RE-OCI-001',
@@ -730,7 +731,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Agricultural land/plantation/farmhouse generally not permitted.',
     ...reBase,
     ...RBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
 
   // =========================================================================
@@ -760,7 +761,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
       exceptions: 'Trust-specific eligibility and broker policies vary.',
       ...reitBase,
       ...SEBI,
-      reviewStatus: ILL,
+      status: 'PUBLISHED',
     });
   }
 
@@ -790,7 +791,7 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Product-specific eligibility varies.',
     ...gftBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
   });
   add('gift-city-products', {
     ruleId: 'GFT-OCI-001',
@@ -806,7 +807,61 @@ export function buildComprehensiveRules(categoryMap: Map<string, string>): Store
     exceptions: 'Product-specific eligibility varies.',
     ...gftBase,
     ...SEBI,
-    reviewStatus: ILL,
+    status: 'PUBLISHED',
+  });
+
+  // ---- DRAFT Rules (pending admin review - not served to users) ----
+  add('real-estate', {
+    ruleId: 'RE-AG-001',
+    jurisdiction: '*',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Real Estate'),
+    ],
+    outcome: 'POTENTIAL_RESTRICTION',
+    explanation:
+      'Proposed: NRIs may be restricted from purchasing agricultural land in certain states effective 2027. State-level regulations under review.',
+    conditionsDetail:
+      'Draft rule pending RBI clarification. Not yet in effect.',
+    exceptions: 'State-specific variations may apply.',
+    accountType: 'NRO account',
+    documentation: 'PAN, passport, state-specific approvals',
+    repatriation: 'Subject to FEMA and state-level restrictions',
+    taxConsiderations: 'Capital gains tax may apply at state rates',
+    sourceUrl: 'https://www.rbi.org.in',
+    sourceName: 'RBI (FEMA)',
+    effectiveFrom: new Date('2027-01-01').toISOString(),
+    lastVerified: new Date('2024-01-15').toISOString(),
+    status: 'DRAFT',
+    version: 1,
+  });
+
+  add('fixed-deposits', {
+    ruleId: 'FD-TAX-001',
+    jurisdiction: 'United States',
+    investorCategory: 'NRI',
+    conditions: [
+      cond('countryOfResidence', 'eq', 'United States'),
+      cond('investorCategory', 'eq', 'NRI'),
+      cond('category', 'eq', 'Fixed Deposits'),
+    ],
+    outcome: 'VERIFICATION_REQUIRED',
+    explanation:
+      'Proposed: US-based NRIs may face additional FATCA reporting on NRO fixed deposit interest above $10,000. Pending IRS guidance.',
+    conditionsDetail:
+      'Draft rule pending tax treaty update. Not yet in effect.',
+    exceptions: 'DTAA benefits may apply depending on treaty status.',
+    accountType: 'NRO account',
+    documentation: 'PAN, passport, FATCA declaration, Form W-8BEN',
+    repatriation: 'NRO deposits subject to repatriation limits',
+    taxConsiderations: 'Potential additional withholding tax on interest',
+    sourceUrl: 'https://www.irs.gov',
+    sourceName: 'IRS (USA)',
+    effectiveFrom: new Date('2025-07-01').toISOString(),
+    lastVerified: new Date('2024-06-01').toISOString(),
+    status: 'DRAFT',
+    version: 1,
   });
 
   return rules;

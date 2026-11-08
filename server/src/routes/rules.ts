@@ -22,9 +22,10 @@ const ruleSchema = z.object({
   taxConsiderations: z.string().optional(),
   sourceUrl: z.string().url().optional().nullable(),
   sourceName: z.string().optional(),
-  effectiveDate: z.string().datetime().optional().nullable(),
+  effectiveFrom: z.string().datetime().optional().nullable(),
+  effectiveTo: z.string().datetime().optional().nullable(),
   lastVerified: z.string().datetime().optional().nullable(),
-  reviewStatus: z.enum(['VERIFIED', 'PENDING', 'OUTDATED', 'ILLUSTRATIVE']),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
   version: z.number().int().positive().optional(),
   isActive: z.boolean().optional(),
 });
@@ -38,7 +39,7 @@ router.get('/', requireAuth, async (_req, res) => {
   if (q.jurisdiction) filter.jurisdiction = q.jurisdiction;
   if (q.investorCategory) filter.investorCategory = q.investorCategory;
   if (q.isActive !== undefined) filter.isActive = q.isActive === 'true';
-  if (q.reviewStatus) filter.reviewStatus = q.reviewStatus;
+  if (q.status) filter.status = q.status;
   const rules = await db.listEligibilityRules(filter);
   res.json({ rules });
 });
@@ -65,8 +66,10 @@ router.post('/', requireAuth, requireAdmin, validate(ruleSchema), async (req: Au
     ...data,
     version: data.version ?? 1,
     isActive: data.isActive ?? true,
-    effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : undefined,
+    effectiveFrom: data.effectiveFrom ? new Date(data.effectiveFrom) : undefined,
+    effectiveTo: data.effectiveTo ? new Date(data.effectiveTo) : undefined,
     lastVerified: data.lastVerified ? new Date(data.lastVerified) : undefined,
+    status: data.status ?? 'DRAFT',
   });
   res.status(201).json({ rule });
 });
@@ -86,8 +89,10 @@ router.put(
     const data = req.body as z.infer<typeof ruleSchema>;
     const updated = await db.updateEligibilityRule(rule.id, {
       ...data,
-      effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : rule.effectiveDate,
+      effectiveFrom: data.effectiveFrom ? new Date(data.effectiveFrom) : rule.effectiveFrom,
+      effectiveTo: data.effectiveTo ? new Date(data.effectiveTo) : rule.effectiveTo,
       lastVerified: data.lastVerified ? new Date(data.lastVerified) : rule.lastVerified,
+      status: data.status ?? rule.status,
     });
     res.json({ rule: updated });
   }

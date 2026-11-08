@@ -41,9 +41,10 @@ export interface MatchedRule {
   taxConsiderations?: string | null;
   sourceUrl?: string | null;
   sourceName?: string | null;
-  effectiveDate?: Date | null;
+  effectiveFrom?: Date | null;
+  effectiveTo?: Date | null;
   lastVerified?: Date | null;
-  reviewStatus: string;
+  status: string;
   version: number;
   isIllustrative: boolean;
   matched: boolean;
@@ -208,7 +209,8 @@ export async function evaluateEligibility(input: EligibilityInput): Promise<{
     );
   }
 
-  const allRules = await db.listEligibilityRules({ isActive: true });
+  const now = new Date();
+  const allRules = await db.listEligibilityRules({ isActive: true, status: 'PUBLISHED' });
 
   // Filter rules relevant to this category + jurisdiction + investor category.
   const relevant = allRules.filter((r: StoreEligibilityRule) => {
@@ -229,6 +231,9 @@ export async function evaluateEligibility(input: EligibilityInput): Promise<{
     ) {
       return false;
     }
+    // effective date range check
+    if (r.effectiveFrom && r.effectiveFrom > now) return false;
+    if (r.effectiveTo && r.effectiveTo < now) return false;
     return true;
   });
 
@@ -268,11 +273,12 @@ export async function evaluateEligibility(input: EligibilityInput): Promise<{
         taxConsiderations: rule.taxConsiderations ?? null,
         sourceUrl: rule.sourceUrl ?? null,
         sourceName: rule.sourceName ?? null,
-        effectiveDate: rule.effectiveDate ?? null,
+        effectiveFrom: rule.effectiveFrom ?? null,
+        effectiveTo: rule.effectiveTo ?? null,
         lastVerified: rule.lastVerified ?? null,
-        reviewStatus: rule.reviewStatus,
+        status: rule.status,
         version: rule.version,
-        isIllustrative: rule.reviewStatus === 'ILLUSTRATIVE' || rule.reviewStatus === 'PENDING',
+        isIllustrative: rule.status === 'DRAFT',
         matched: true,
         matchReasons,
       });

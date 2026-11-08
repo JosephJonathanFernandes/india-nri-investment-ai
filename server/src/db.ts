@@ -110,9 +110,10 @@ interface StoreEligibilityRule {
   taxConsiderations?: string | null;
   sourceUrl?: string | null;
   sourceName?: string | null;
-  effectiveDate?: Date | null;
+  effectiveFrom?: Date | null;
+  effectiveTo?: Date | null;
   lastVerified?: Date | null;
-  reviewStatus: string;
+  status: string;
   version: number;
   isActive: boolean;
   createdAt: Date;
@@ -155,9 +156,10 @@ interface StoreEligibilityResult {
   taxConsiderations?: string | null;
   sourceUrl?: string | null;
   sourceName?: string | null;
-  effectiveDate?: Date | null;
+  effectiveFrom?: Date | null;
+  effectiveTo?: Date | null;
   lastVerified?: Date | null;
-  reviewStatus: string;
+  status: string;
   version: number;
   isIllustrative: boolean;
   createdAt: Date;
@@ -396,9 +398,10 @@ class MemoryDb {
       taxConsiderations: data.taxConsiderations ?? null,
       sourceUrl: data.sourceUrl ?? null,
       sourceName: data.sourceName ?? null,
-      effectiveDate: data.effectiveDate ?? null,
+      effectiveFrom: data.effectiveFrom ?? null,
+      effectiveTo: data.effectiveTo ?? null,
       lastVerified: data.lastVerified ?? null,
-      reviewStatus: data.reviewStatus!,
+      status: data.status ?? 'DRAFT',
       version: data.version ?? 1,
       isActive: data.isActive ?? true,
       createdAt: data.createdAt ?? now(),
@@ -420,7 +423,7 @@ class MemoryDb {
     jurisdiction?: string;
     investorCategory?: string;
     isActive?: boolean;
-    reviewStatus?: string;
+    status?: string;
   }): Promise<StoreEligibilityRule[]> {
     let rules = [...this.eligibilityRules.values()];
     if (filter) {
@@ -430,7 +433,7 @@ class MemoryDb {
         rules = rules.filter((r) => r.investorCategory === filter.investorCategory);
       if (filter.isActive !== undefined)
         rules = rules.filter((r) => r.isActive === filter.isActive);
-      if (filter.reviewStatus) rules = rules.filter((r) => r.reviewStatus === filter.reviewStatus);
+      if (filter.status) rules = rules.filter((r) => r.status === filter.status);
     }
     return rules.map((r) => ({
       ...r,
@@ -538,9 +541,10 @@ class MemoryDb {
       taxConsiderations: data.taxConsiderations ?? null,
       sourceUrl: data.sourceUrl ?? null,
       sourceName: data.sourceName ?? null,
-      effectiveDate: data.effectiveDate ?? null,
+      effectiveFrom: data.effectiveFrom ?? null,
+      effectiveTo: data.effectiveTo ?? null,
       lastVerified: data.lastVerified ?? null,
-      reviewStatus: data.reviewStatus!,
+      status: data.status ?? 'DRAFT',
       version: data.version!,
       isIllustrative: data.isIllustrative ?? false,
       createdAt: data.createdAt ?? now(),

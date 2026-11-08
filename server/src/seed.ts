@@ -66,7 +66,8 @@ async function main() {
     if (!existing) {
       await db.createEligibilityRule({
         ...r,
-        effectiveDate: r.effectiveDate ? new Date(r.effectiveDate) : undefined,
+        effectiveFrom: r.effectiveFrom ? new Date(r.effectiveFrom) : undefined,
+        effectiveTo: r.effectiveTo ? new Date(r.effectiveTo) : undefined,
         lastVerified: r.lastVerified ? new Date(r.lastVerified) : undefined,
       });
     }
@@ -125,7 +126,8 @@ async function seedDemoData(): Promise<void> {
     if (!existing) {
       await db.createEligibilityRule({
         ...r,
-        effectiveDate: r.effectiveDate ? new Date(r.effectiveDate) : undefined,
+        effectiveFrom: r.effectiveFrom ? new Date(r.effectiveFrom) : undefined,
+        effectiveTo: r.effectiveTo ? new Date(r.effectiveTo) : undefined,
         lastVerified: r.lastVerified ? new Date(r.lastVerified) : undefined,
       });
     }

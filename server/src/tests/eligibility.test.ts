@@ -20,7 +20,7 @@ describe('eligibility engine', () => {
     });
     expect(res.overallOutcome).toBe('POTENTIALLY_ELIGIBLE');
     expect(res.rules.length).toBeGreaterThan(0);
-    expect(res.rules[0].isIllustrative).toBe(true);
+    expect(res.rules[0].isIllustrative).toBe(false);
     expect(res.unresolved).toBe(false);
   });
 
@@ -73,7 +73,7 @@ describe('eligibility engine', () => {
     const rules = await db.listEligibilityRules({ isActive: true });
     const usRule = rules.find((r) => r.ruleId === 'MF-US-001');
     expect(usRule).toBeDefined();
-    expect(usRule.reviewStatus).toBe('ILLUSTRATIVE');
+    expect(usRule.status).toBe('PUBLISHED');
     expect(usRule.sourceUrl).toContain('sebi.gov.in');
   });
 

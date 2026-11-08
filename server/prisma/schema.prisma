@@ -76,9 +76,10 @@ model EligibilityRule {
   taxConsiderations String?
   sourceUrl        String?
   sourceName       String?
-  effectiveDate    DateTime?
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
   lastVerified     DateTime?
-  reviewStatus     String
+  status           String   @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
   version          Int      @default(1)
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
@@ -87,6 +88,21 @@ model EligibilityRule {
   @@index([categoryId])
   @@index([jurisdiction, investorCategory])
   @@index([ruleId])
+  @@index([status])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+model RuleVersionHistory {
+  id            String   @id @default(uuid())
+  ruleId        String
+  field         String
+  oldValue      String?
+  newValue      String?
+  changedBy     String?
+  changedAt     DateTime @default(now())
+
+  @@index([ruleId])
+  @@index([changedAt])
 }
 
 model RegulatorySource {
