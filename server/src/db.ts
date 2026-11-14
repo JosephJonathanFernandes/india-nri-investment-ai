@@ -63,6 +63,9 @@ interface StoreUser {
   emailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Account lockout fields
+  failedLoginAttempts: number;
+  lockoutUntil?: Date | null;
 }
 interface StoreUserProfile {
   id: string;
@@ -215,6 +218,15 @@ interface StoreChatMessage {
   sources: string[];
   createdAt: Date;
 }
+interface StoreAuditLog {
+  id: string;
+  action: string;
+  entity: string;
+  entityId?: string | null;
+  userId?: string | null;
+  metadata?: Json | null;
+  createdAt: Date;
+}
 
 class MemoryDb {
   users = new Map<string, StoreUser>();
@@ -230,6 +242,7 @@ class MemoryDb {
   regulatoryUpdates = new Map<string, StoreRegulatoryUpdate>();
   chatConversations = new Map<string, StoreChatConversation>();
   chatMessages = new Map<string, StoreChatMessage>();
+  auditLogs = new Map<string, StoreAuditLog>();
 
   // ---- User ----
   async createUser(data: Partial<StoreUser>): Promise<StoreUser> {
@@ -241,6 +254,8 @@ class MemoryDb {
       name: data.name ?? null,
       role: data.role ?? 'USER',
       emailVerified: data.emailVerified ?? false,
+      failedLoginAttempts: data.failedLoginAttempts ?? 0,
+      lockoutUntil: data.lockoutUntil ?? null,
       createdAt: data.createdAt ?? now(),
       updatedAt: now(),
     };
@@ -742,6 +757,41 @@ class MemoryDb {
       .map((m) => ({ ...m }));
   }
 
+  // ---- AuditLog ----
+  async createAuditLog(data: Partial<StoreAuditLog>): Promise<StoreAuditLog> {
+    const id = data.id || uid();
+    const log: StoreAuditLog = {
+      id,
+      action: data.action!,
+      entity: data.entity!,
+      entityId: data.entityId ?? null,
+      userId: data.userId ?? null,
+      metadata: data.metadata ?? null,
+      createdAt: data.createdAt ?? now(),
+    };
+    this.auditLogs.set(id, log);
+    return { ...log };
+  }
+  async listAuditLogs(filter?: {
+    userId?: string;
+    entity?: string;
+    entityId?: string;
+    action?: string;
+    limit?: number;
+  }): Promise<StoreAuditLog[]> {
+    let logs = [...this.auditLogs.values()];
+    if (filter) {
+      if (filter.userId) logs = logs.filter((l) => l.userId === filter.userId);
+      if (filter.entity) logs = logs.filter((l) => l.entity === filter.entity);
+      if (filter.entityId) logs = logs.filter((l) => l.entityId === filter.entityId);
+      if (filter.action) logs = logs.filter((l) => l.action === filter.action);
+    }
+    return logs
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, filter?.limit ?? 100)
+      .map((l) => ({ ...l }));
+  }
+
   async $disconnect(): Promise<void> {
     // no-op for in-memory
   }
@@ -764,6 +814,7 @@ export type {
   StoreRegulatoryUpdate,
   StoreChatConversation,
   StoreChatMessage,
+  StoreAuditLog,
 };
 
 // ---------------------------------------------------------------------------
@@ -992,6 +1043,18 @@ export const db = {
           orderBy: { createdAt: 'asc' },
         })
       : memory.listChatMessages(conversationId),
+
+  // AuditLog
+  createAuditLog: (data: any) =>
+    usePrisma ? createPrisma().auditLog.create({ data }) : memory.createAuditLog(data),
+  listAuditLogs: (filter?: any) =>
+    usePrisma
+      ? createPrisma().auditLog.findMany({
+          where: filter,
+          orderBy: { createdAt: 'desc' },
+          take: filter?.limit ?? 100,
+        })
+      : memory.listAuditLogs(filter),
 
   $connect: tryConnectPrisma,
   $disconnect: async () => {

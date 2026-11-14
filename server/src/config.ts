@@ -14,4 +14,13 @@ export const config = {
   rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX ?? '100', 10),
   adminEmail: process.env.ADMIN_EMAIL ?? 'admin@nrisimplifier.local',
   adminPassword: process.env.ADMIN_PASSWORD ?? 'AdminChangeMe123!',
+
+  // Security settings
+  passwordMinLength: parseInt(process.env.PASSWORD_MIN_LENGTH ?? '12', 10),
+  passwordRequireUppercase: process.env.PASSWORD_REQUIRE_UPPERCASE !== 'false',
+  passwordRequireLowercase: process.env.PASSWORD_REQUIRE_LOWERCASE !== 'false',
+  passwordRequireNumber: process.env.PASSWORD_REQUIRE_NUMBER !== 'false',
+  passwordRequireSymbol: process.env.PASSWORD_REQUIRE_SYMBOL !== 'false',
+  lockoutMaxAttempts: parseInt(process.env.LOCKOUT_MAX_ATTEMPTS ?? '5', 10),
+  lockoutDurationMs: parseInt(process.env.LOCKOUT_DURATION_MS ?? '900000', 10), // 15 minutes
 };

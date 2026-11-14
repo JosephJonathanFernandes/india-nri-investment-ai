@@ -12,7 +12,7 @@ let testUserId: string;
 const TEST_USER = {
   name: 'Test User',
   email: 'test@example.com',
-  password: 'Password123!',
+  password: 'SecureP@ssw0rd!',
 };
 
 describe('API Integration', () => {
@@ -33,13 +33,35 @@ describe('API Integration', () => {
     await db.$disconnect();
   });
 
+  // CSRF token cache
+  let csrfToken: string | null = null;
+
+  async function getCsrfToken(): Promise<string> {
+    if (csrfToken) return csrfToken;
+    const res = await fetch(`${baseUrl}/api/auth/csrf-token`);
+    const setCookie = res.headers.get('set-cookie') ?? '';
+    const match = setCookie.match(/XSRF-TOKEN=([^;]+)/);
+    csrfToken = match ? match[1] : '';
+    return csrfToken;
+  }
+
   const request = async (method: string, path: string, body?: any, token?: string) => {
+    const isStateChanging = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    // Add CSRF token for state-changing requests
+    if (isStateChanging) {
+      const token = await getCsrfToken();
+      headers['X-XSRF-TOKEN'] = token;
+      headers['Cookie'] = `XSRF-TOKEN=${token}`;
+    }
+
     const res = await fetch(`${baseUrl}${path}`, {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers,
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
     let data: any = null;
@@ -331,6 +353,212 @@ describe('API Integration', () => {
     it('should not allow unauthenticated access to eligibility history', async () => {
       const { status } = await request('GET', '/api/eligibility/history');
       expect(status).toBe(401);
+    });
+  });
+
+  describe('Security - Password Strength', () => {
+    it('should reject weak password (too short)', async () => {
+      const { status } = await request('POST', '/api/auth/register', {
+        name: 'Weak User',
+        email: 'weak@example.com',
+        password: 'weak',
+      });
+      expect(status).toBe(400);
+    });
+
+    it('should reject weak password (no uppercase)', async () => {
+      const { status } = await request('POST', '/api/auth/register', {
+        name: 'Weak User',
+        email: 'weak2@example.com',
+        password: 'password123!',
+      });
+      expect(status).toBe(400);
+    });
+
+    it('should reject weak password (no number)', async () => {
+      const { status } = await request('POST', '/api/auth/register', {
+        name: 'Weak User',
+        email: 'weak3@example.com',
+        password: 'Password!',
+      });
+      expect(status).toBe(400);
+    });
+
+    it('should accept strong password', async () => {
+      const { status } = await request('POST', '/api/auth/register', {
+        name: 'Strong User',
+        email: 'strong@example.com',
+        password: 'SecureP@ssw0rd!',
+      });
+      expect(status).toBe(201);
+    });
+  });
+
+  describe('Security - Account Lockout', () => {
+    it('should lock account after 5 failed attempts', async () => {
+      // Use an existing email but wrong password repeatedly
+      const email = 'lockout@example.com';
+      await request('POST', '/api/auth/register', {
+        name: 'Lockout User',
+        email,
+        password: 'LockoutP@ssw0rd!',
+      });
+
+      // Fail 5 times
+      for (let i = 0; i < 5; i++) {
+        const { status } = await request('POST', '/api/auth/login', {
+          email,
+          password: 'WrongP@ssw0rd!',
+        });
+        expect(status).toBe(401);
+      }
+
+      // 6th attempt should be locked
+      const { status, data } = await request('POST', '/api/auth/login', {
+        email,
+        password: 'WrongP@ssw0rd!',
+      });
+      expect(status).toBe(423);
+      expect(data.error).toBe('account_locked');
+    });
+
+    it('should allow login after lockout expires', async () => {
+      // Register a new user
+      const email = 'lockout2@example.com';
+      await request('POST', '/api/auth/register', {
+        name: 'Lockout2 User',
+        email,
+        password: 'Lockout2P@ssw0rd!',
+      });
+
+      // Fail 5 times to trigger lockout
+      for (let i = 0; i < 5; i++) {
+        await request('POST', '/api/auth/login', {
+          email,
+          password: 'WrongP@ssw0rd!',
+        });
+      }
+
+      // Directly update the DB to clear the lockout (simulating time passing)
+      const user = await db.findUserByEmail(email);
+      if (user) {
+        await db.updateUser(user.id, { lockoutUntil: new Date(Date.now() - 60000) });
+      }
+
+      // Should now be able to login
+      const { status, data } = await request('POST', '/api/auth/login', {
+        email,
+        password: 'Lockout2P@ssw0rd!',
+      });
+      expect(status).toBe(200);
+      expect(data.accessToken).toBeDefined();
+    });
+  });
+
+  describe('Security - CSRF Token', () => {
+    it('should get CSRF token cookie', async () => {
+      const res = await fetch(`${baseUrl}/api/auth/csrf-token`);
+      expect(res.status).toBe(200);
+      const setCookie = res.headers.get('set-cookie');
+      expect(setCookie).toContain('XSRF-TOKEN=');
+    });
+
+    it('should reject state-changing request without CSRF token', async () => {
+      // Register a user first to get a token
+      await request('POST', '/api/auth/register', {
+        name: 'CSRF User',
+        email: 'csrf@example.com',
+        password: 'CsrfP@ssw0rd!',
+      });
+
+      // Try to update profile without CSRF header
+      const { status } = await fetch(`${baseUrl}/api/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          countryOfResidence: 'United States',
+          residencyStatus: 'NRI',
+          investmentObjectives: ['Long-term wealth creation'],
+          riskPreference: 'Moderate',
+          investmentAmountRange: '₹50 lakh - ₹1 crore',
+          repatriationPreference: 'Prefer full repatriation where legally permitted',
+          existingBanking: ['NRE account'],
+        }),
+      });
+      expect(status).toBe(403);
+    });
+  });
+
+  describe('Security - Account Export & Delete', () => {
+    let exportUserToken: string;
+    let exportUserId: string;
+
+    beforeAll(async () => {
+      // Register a user for export/delete tests
+      const { status, data } = await request('POST', '/api/auth/register', {
+        name: 'Export User',
+        email: 'export@example.com',
+        password: 'ExportP@ssw0rd!',
+      });
+      exportUserToken = data.accessToken;
+      exportUserId = data.user.id;
+
+      // Create some data for the user
+      await request(
+        'PUT',
+        '/api/profile',
+        {
+          countryOfResidence: 'United States',
+          residencyStatus: 'NRI',
+          investmentObjectives: ['Long-term wealth creation'],
+          riskPreference: 'Moderate',
+          investmentAmountRange: '₹50 lakh - ₹1 crore',
+          repatriationPreference: 'Prefer full repatriation where legally permitted',
+          existingBanking: ['NRE account'],
+        },
+        exportUserToken
+      );
+
+      await request(
+        'POST',
+        '/api/eligibility/check',
+        { category: 'Indian Mutual Funds' },
+        exportUserToken
+      );
+    });
+
+    it('should export user data', async () => {
+      const { status, data } = await request(
+        'GET',
+        '/api/auth/account/export',
+        undefined,
+        exportUserToken
+      );
+      expect(status).toBe(200);
+      expect(data.user.email).toBe('export@example.com');
+      expect(data.profile.countryOfResidence).toBe('United States');
+      expect(data.eligibilityChecks.length).toBeGreaterThan(0);
+    });
+
+    it('should delete account and all data', async () => {
+      const { status } = await request(
+        'DELETE',
+        '/api/auth/account',
+        undefined,
+        exportUserToken
+      );
+      expect(status).toBe(200);
+
+      // Verify user can no longer access profile
+      const { status: status2 } = await request(
+        'GET',
+        '/api/auth/me',
+        undefined,
+        exportUserToken
+      );
+      expect(status2).toBe(404);
     });
   });
 });

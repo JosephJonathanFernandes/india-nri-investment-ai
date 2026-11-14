@@ -17,6 +17,7 @@ import checklistRoutes from './routes/checklist';
 import taxRoutes from './routes/tax';
 import savedRoutes from './routes/savedInvestments';
 import adminRoutes from './routes/admin';
+import { validateCsrfToken } from './middleware/csrf';
 
 // Health check
 import { Request, Response } from 'express';
@@ -36,6 +37,9 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+
+// CSRF protection for all state-changing requests
+app.use(validateCsrfToken);
 
 // Request logging (dev)
 if (config.nodeEnv === 'development') {
