@@ -23,4 +23,7 @@ export const config = {
   passwordRequireSymbol: process.env.PASSWORD_REQUIRE_SYMBOL !== 'false',
   lockoutMaxAttempts: parseInt(process.env.LOCKOUT_MAX_ATTEMPTS ?? '5', 10),
   lockoutDurationMs: parseInt(process.env.LOCKOUT_DURATION_MS ?? '900000', 10), // 15 minutes
+
+  // Sentry error tracking
+  sentryDsn: process.env.SENTRY_DSN ?? '',
 };

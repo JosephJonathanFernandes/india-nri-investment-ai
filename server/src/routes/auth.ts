@@ -12,6 +12,7 @@ import { config } from '../config';
 import { validate, apiError } from '../middleware/validation';
 import { rateLimit } from '../middleware/rateLimit';
 import { ensureCsrfToken } from '../middleware/csrf';
+import { auditLog } from '../middleware/audit';
 import { requireAuth, optionalAuth, AuthRequest } from '../middleware/auth';
 
 const router = Router();
@@ -75,7 +76,7 @@ function clearAuthCookies(res: any) {
 }
 
 /** POST /api/auth/register */
-router.post('/register', validate(registerSchema), async (req, res) => {
+router.post('/register', validate(registerSchema), auditLog('REGISTER', 'User'), async (req, res) => {
   const { name, email, password } = req.body as z.infer<typeof registerSchema>;
 
   const existing = await db.findUserByEmail(email);
@@ -118,7 +119,7 @@ router.post('/register', validate(registerSchema), async (req, res) => {
 });
 
 /** POST /api/auth/login */
-router.post('/login', validate(loginSchema), async (req, res) => {
+router.post('/login', validate(loginSchema), auditLog('LOGIN', 'User'), async (req, res) => {
   const { email, password } = req.body as z.infer<typeof loginSchema>;
 
   const user = await db.findUserByEmail(email);

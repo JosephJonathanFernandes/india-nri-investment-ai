@@ -2,8 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import * as Sentry from '@sentry/node';
 import { config } from './config';
 import { db, usePrisma } from './db';
+import { logger } from './logger';
 
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
@@ -19,15 +21,32 @@ import savedRoutes from './routes/savedInvestments';
 import adminRoutes from './routes/admin';
 import { validateCsrfToken } from './middleware/csrf';
 
-// Health check
-import { Request, Response } from 'express';
-
 const app = express();
 
 // Trust proxy (for rate limiting behind reverse proxies)
 app.set('trust proxy', 1);
 
+// ---------------------------------------------------------------------------
+// Sentry initialization (must be before other middleware)
+// ---------------------------------------------------------------------------
+if (config.sentryDsn) {
+  Sentry.init({
+    dsn: config.sentryDsn,
+    environment: config.nodeEnv,
+    release: 'nri-investment-simplifier@1.0.0',
+    tracesSampleRate: config.nodeEnv === 'production' ? 0.1 : 1.0,
+    integrations: [
+      new Sentry.Integrations.Http({ tracing: true }),
+      new Sentry.Integrations.Express({ app }),
+    ],
+  });
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
+
+// ---------------------------------------------------------------------------
 // Security & CORS
+// ---------------------------------------------------------------------------
 app.use(helmet());
 app.use(
   cors({
@@ -38,28 +57,101 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// ---------------------------------------------------------------------------
 // CSRF protection for all state-changing requests
+// ---------------------------------------------------------------------------
 app.use(validateCsrfToken);
 
-// Request logging (dev)
-if (config.nodeEnv === 'development') {
-  app.use((req: Request, _res: Response, next) => {
-    // eslint-disable-next-line no-console
-    console.log(`${req.method} ${req.originalUrl}`);
-    next();
+// ---------------------------------------------------------------------------
+// Simple request logging using pino
+// ---------------------------------------------------------------------------
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info('HTTP request', {
+      method: req.method,
+      url: req.originalUrl,
+      statusCode: res.statusCode,
+      durationMs: duration,
+      userId: (req as any).user?.userId,
+      ip: req.ip,
+    });
   });
-}
-
-// Routes
-app.get('/api/health', (_req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    service: 'nri-investment-simplifier-server',
-    env: config.nodeEnv,
-    db: (db as any).constructor?.name || 'db',
-  });
+  next();
 });
 
+// ---------------------------------------------------------------------------
+// Health check endpoints
+// ---------------------------------------------------------------------------
+
+// Liveness probe - service is running
+app.get('/api/health/live', (_req: Request, res: Response) => {
+  res.json({ status: 'alive', service: 'nri-investment-simplifier-server' });
+});
+
+// Readiness probe - service is ready to serve requests
+app.get('/api/health/ready', async (_req: Request, res: Response) => {
+  const checks: Record<string, string> = {};
+  let healthy = true;
+
+  // Check database connectivity
+  try {
+    await db.$connect();
+    checks.database = 'connected';
+  } catch (err) {
+    checks.database = 'disconnected';
+    healthy = false;
+    logger.error('Database health check failed', { error: err });
+  }
+
+  // Check Prisma status
+  checks.prisma = usePrisma ? 'connected' : 'in-memory';
+
+  if (healthy) {
+    res.status(200).json({ status: 'ready', checks });
+  } else {
+    res.status(503).json({ status: 'unready', checks });
+  }
+});
+
+// Full health check (combined liveness + readiness)
+app.get('/api/health', async (_req: Request, res: Response) => {
+  const checks: Record<string, string> = {};
+  let healthy = true;
+
+  try {
+    await db.$connect();
+    checks.database = 'connected';
+  } catch (err) {
+    checks.database = 'disconnected';
+    healthy = false;
+    logger.error('Health check database failed', { error: err });
+  }
+
+  checks.prisma = usePrisma ? 'connected' : 'in-memory';
+
+  if (healthy) {
+    res.json({
+      status: 'ok',
+      service: 'nri-investment-simplifier-server',
+      env: config.nodeEnv,
+      version: '1.0.0',
+      checks,
+    });
+  } else {
+    res.status(503).json({
+      status: 'unhealthy',
+      service: 'nri-investment-simplifier-server',
+      env: config.nodeEnv,
+      checks,
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Routes
+// ---------------------------------------------------------------------------
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/eligibility', eligibilityRoutes);
@@ -72,14 +164,31 @@ app.use('/api/tax', taxRoutes);
 app.use('/api/saved-investments', savedRoutes);
 app.use('/api/admin', adminRoutes);
 
+// ---------------------------------------------------------------------------
+// Sentry error handler (must be before other error handlers)
+// ---------------------------------------------------------------------------
+if (config.sentryDsn) {
+  app.use(Sentry.Handlers.errorHandler());
+}
+
+// ---------------------------------------------------------------------------
 // 404
+// ---------------------------------------------------------------------------
 app.use((_req: Request, res: Response) => {
+  logger.warn('Route not found', { path: _req.originalUrl, method: _req.method });
   res.status(404).json({ error: 'not_found', message: 'Route not found.' });
 });
 
+// ---------------------------------------------------------------------------
 // Global error handler
+// ---------------------------------------------------------------------------
 app.use((err: any, _req: Request, res: Response, _next: Function) => {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error', {
+    error: err.message,
+    stack: err.stack,
+    status: err.status || 500,
+  });
+
   const status = err.status || 500;
   res.status(status).json({
     error: err.error || 'internal_server_error',
@@ -96,12 +205,11 @@ export function createServer(port: number = config.port) {
       try {
         await seedDemoData();
       } catch (err) {
-        console.warn('[seed] Auto-seed failed:', (err as Error).message);
+        logger.warn('[seed] Auto-seed failed', { error: err });
       }
     }
     const addr = server.address() as { port: number };
-    // eslint-disable-next-line no-console
-    console.log(`Server listening on http://localhost:${addr.port} (${config.nodeEnv})`);
+    logger.info('Server started', { port: addr.port, env: config.nodeEnv });
   });
   return server;
 }

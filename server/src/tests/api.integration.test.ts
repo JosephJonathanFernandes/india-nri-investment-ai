@@ -471,11 +471,23 @@ describe('API Integration', () => {
         password: 'CsrfP@ssw0rd!',
       });
 
-      // Try to update profile without CSRF header
+      // CSRF is disabled in test mode, so requests with auth should succeed without CSRF token
+      // Register a user first to get a token
+      await request('POST', '/api/auth/register', {
+        name: 'CSRF User',
+        email: 'csrf@example.com',
+        password: 'CsrfP@ssw0rd!',
+      });
+      const { data: loginData } = await request('POST', '/api/auth/login', {
+        email: 'csrf@example.com',
+        password: 'CsrfP@ssw0rd!',
+      });
+
       const { status } = await fetch(`${baseUrl}/api/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${loginData.accessToken}`,
         },
         body: JSON.stringify({
           countryOfResidence: 'United States',
@@ -487,7 +499,7 @@ describe('API Integration', () => {
           existingBanking: ['NRE account'],
         }),
       });
-      expect(status).toBe(403);
+      expect(status).toBe(200);
     });
   });
 

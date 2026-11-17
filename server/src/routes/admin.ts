@@ -134,4 +134,18 @@ router.post('/updates', requireAuth, requireAdmin, async (req: AuthRequest, res)
   res.status(201).json({ update });
 });
 
+/** GET /api/admin/audit-logs - View audit logs (admin only) */
+router.get('/audit-logs', requireAuth, requireAdmin, async (req: AuthRequest, res) => {
+  const filter: any = {};
+  const q = (req as any).query;
+  if (q.userId) filter.userId = q.userId;
+  if (q.entity) filter.entity = q.entity;
+  if (q.entityId) filter.entityId = q.entityId;
+  if (q.action) filter.action = q.action;
+  if (q.limit) filter.limit = parseInt(q.limit as string, 10) || 100;
+
+  const logs = await db.listAuditLogs(filter);
+  res.json({ auditLogs: logs });
+});
+
 export default router;
