@@ -156,13 +156,16 @@ function CategoryButton({ c, isSel, selectedLength, onToggle }: CategoryButtonPr
 }
 
 export default function Comparison() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [categories, setCategories] = useState<any[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [savedComparisons, setSavedComparisons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadCategories();
+    loadSavedComparisons();
   }, []);
 
   const loadCategories = async () => {
@@ -173,8 +176,43 @@ export default function Comparison() {
     setLoading(false);
   };
 
+  const loadSavedComparisons = async () => {
+    if (!user) return;
+    try {
+      const res: any = await api.get('/saved-investments');
+      // Filter saved investments that are comparisons (categoryId starts with 'comp-')
+      const comparisons = (res.savedInvestments || []).filter(
+        (s: any) => s.categoryId?.startsWith('comp-')
+      );
+      setSavedComparisons(comparisons);
+    } catch {}
+  };
+
   const toggle = (id: string) => {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const saveComparison = async () => {
+    if (selected.length === 0) return;
+    setSaving(true);
+    try {
+      const catIds = selected.join(',');
+      await api.post('/saved-investments', {
+        categoryId: `comp-${catIds}`,
+        notes: `Comparison: ${selected.join(', ')}`,
+      });
+      loadSavedComparisons();
+      setSelected([]);
+    } catch (err: any) {
+      alert(err.message || 'Failed to save comparison');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const loadSavedComparison = (categoryIds: string) => {
+    const ids = categoryIds.split(',');
+    setSelected(ids.filter((id) => categories.some((c) => c.id === id)));
   };
 
   if (loading)
@@ -309,8 +347,14 @@ export default function Comparison() {
                       General eligibility considerations are illustrative unless marked verified.
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => {}}>
-                    <Save className="w-4 h-4 mr-1" /> Save comparison
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={saveComparison}
+                    disabled={saving}
+                  >
+                    <Save className="w-4 h-4 mr-1" />
+                    {saving ? 'Saving...' : 'Save comparison'}
                   </Button>
                 </CardHeader>
                 <CardContent className="p-5 pt-0">
@@ -407,6 +451,45 @@ export default function Comparison() {
               </Card>
             </div>
           </div>
+        )}
+
+        {/* Saved comparisons */}
+        {savedComparisons.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader className="p-5 pb-3 flex items-center justify-between">
+              <CardTitle>Saved comparisons</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelected([])}
+              >
+                Clear all
+              </Button>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {savedComparisons.map((s) => (
+                  <Card
+                    key={s.id}
+                    className="p-4 cursor-pointer border border-gray-200 dark:border-white/20 bg-white dark:bg-navy-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all"
+                    onClick={() => loadSavedComparison(s.categoryId.replace('comp-', ''))}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-semibold text-navy-900 dark:text-white truncate">
+                        {s.notes?.replace('Comparison: ', '') || s.categoryId}
+                      </span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        Saved
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(s.createdAt).toLocaleDateString()}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

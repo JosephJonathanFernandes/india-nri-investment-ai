@@ -31,7 +31,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { ThemeToggle } from '@/components/layout/Navbar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { type EligibilityCheck } from '@/types';
 import { OutcomeDonut } from '@/components/charts/OutcomeDonut';
 import { RiskLiquidityChart } from '@/components/charts/RiskLiquidityChart';
@@ -92,15 +93,140 @@ export default function Dashboard() {
 
   const onboardingComplete = profile?.completedOnboarding;
 
-  if (isLoading)
+  // Skeleton loading state
+  if (isLoading || !user) {
     return (
-      <div className="min-h-screen bg-white dark:bg-navy-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 animate-pulse">
-          <div className="w-12 h-12 rounded-full bg-navy-900" />
-          <h2 className="text-navy-900 dark:text-white font-medium">Loading dashboard...</h2>
+      <div className="min-h-screen bg-gray-50 dark:bg-navy-900">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          {/* Skeleton welcome header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <div className="space-y-4">
+              <div className="h-8 w-3/4 skeleton" />
+              <div className="h-4 w-1/2 skeleton" />
+            </div>
+            <Button variant="emerald" disabled className="w-48">
+              <Skeleton className="h-8 w-32 bg-emerald-600" />
+            </Button>
+          </div>
+
+          {/* Skeleton stat cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Skeleton className="h-4 w-32" />
+                    <div className="mt-2">
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-10 w-10 bg-emerald-600 rounded-full" />
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Skeleton main content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <section>
+                <Card className="overflow-hidden">
+                  <CardHeader className="p-6 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-48" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 pt-0">
+                    <div className="h-64 flex items-center justify-center">
+                      <Skeleton className="h-32 w-32 rounded-full" />
+                    </div>
+                    <Skeleton className="h-4 w-24 mt-4" />
+                    <Skeleton className="h-4 w-12 mt-2" />
+                  </CardContent>
+                </Card>
+              </section>
+
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-4 w-10 skeleton" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <Card key={i} className="p-5">
+                      <div className="h-10 w-10 rounded-xl bg-gray-200 dark:bg-white/10 mb-3" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className="space-y-8">
+              <Card className="p-5">
+                <CardHeader className="p-5 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Clipboard className="w-5 h-5 text-navy-900 dark:text-white" />
+                    <h3 className="font-bold text-navy-900 dark:text-white">
+                      Account setup checklist
+                    </h3>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-5 pt-0">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm mb-3">
+                      <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
+                      <div className="flex-1">
+                        <div className="h-4 w-24 skeleton" />
+                        <div className="h-3 w-48 mt-1 skeleton" />
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="p-5">
+                <CardHeader className="p-5 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-navy-900 dark:text-white" />
+                    <h3 className="font-bold text-navy-900 dark:text-white">
+                      Regulatory updates
+                    </h3>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-5 pt-0">
+                  <div className="h-32 flex items-center justify-center">
+                    <Skeleton className="h-24 w-full rounded-lg bg-gray-200 dark:bg-white/10 animate-pulse" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="p-5">
+                <CardHeader className="p-5 pb-3">
+                  <h3 className="font-bold text-navy-900 dark:text-white">Quick actions</h3>
+                </CardHeader>
+                <CardContent className="p-5 pt-0">
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <Button key={i} variant="outline" className="w-full text-left" disabled>
+                        <Skeleton className="h-8 w-full bg-gray-200 dark:bg-white/10" />
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
-    );
+    </div>
+  );
+  );
 
   const recent = checks.slice(0, 3);
   const latestOutcome = recent[0]?.overallOutcome;
@@ -109,7 +235,8 @@ export default function Dashboard() {
   ).length;
   const needsVerification = checks.filter(
     (c) =>
-      c.overallOutcome === 'VERIFICATION_REQUIRED' || c.overallOutcome === 'POTENTIAL_RESTRICTION'
+      c.overallOutcome === 'VERIFICATION_REQUIRED' ||
+      c.overallOutcome === 'POTENTIAL_RESTRICTION'
   ).length;
 
   return (
@@ -332,8 +459,8 @@ export default function Dashboard() {
                               {c.summary || 'Check completed.'}
                             </p>
                             <p className="text-xs text-gray-400">
-                              {new Date(c.createdAt).toLocaleDateString()} · {c.countryOfResidence}{' '}
-                              · {c.residencyStatus}
+                              {new Date(c.createdAt).toLocaleDateString()} · {c.countryOfResidence} ·{' '}
+                              {c.residencyStatus}
                             </p>
                           </div>
                           <Link
@@ -555,9 +682,7 @@ function StatCard({
           <p className="text-2xl font-bold text-navy-900 dark:text-white mt-1">{value}</p>
           {trend && <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{trend}</p>}
         </div>
-        <div
-          className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center text-white`}
-        >
+        <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center text-white`}>
           {icon}
         </div>
       </div>

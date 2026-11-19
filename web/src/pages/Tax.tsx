@@ -38,6 +38,17 @@ const COUNTRIES = [
   'Other',
 ];
 
+// DTAA treaty rates with India (illustrative, approximate)
+const DTAA_RATES: Record<string, { dividend: number; interest: number; royalty: number }> = {
+  'United States': { dividend: 15, interest: 15, royalty: 10 },
+  'United Kingdom': { dividend: 15, interest: 10, royalty: 10 },
+  'United Arab Emirates': { dividend: 10, interest: 12.5, royalty: 10 },
+  Canada: { dividend: 15, interest: 15, royalty: 10 },
+  Australia: { dividend: 15, interest: 15, royalty: 10 },
+  Singapore: { dividend: 15, interest: 15, royalty: 10 },
+  Other: { dividend: 10, interest: 10, royalty: 10 },
+};
+
 export default function Tax() {
   const { profile } = useAuth();
   const [form, setForm] = useState({
@@ -47,6 +58,7 @@ export default function Tax() {
     saleValue: '',
     holdingPeriodYears: '',
     countryOfTaxResidence: profile?.countryOfResidence || '',
+    dtTaaCountry: profile?.countryOfResidence || '',
     expenses: '',
     knownTdsRate: '',
   });
@@ -66,6 +78,7 @@ export default function Tax() {
         saleValue: form.saleValue ? Number(form.saleValue) : 0,
         holdingPeriodYears: form.holdingPeriodYears ? Number(form.holdingPeriodYears) : 0,
         countryOfTaxResidence: form.countryOfTaxResidence || undefined,
+        dtTaaCountry: form.dtTaaCountry || undefined,
         expenses: form.expenses ? Number(form.expenses) : undefined,
         knownTdsRate: form.knownTdsRate ? Number(form.knownTdsRate) : undefined,
       });
@@ -149,6 +162,38 @@ export default function Tax() {
                       ))}
                     </Select>
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-navy-900 dark:text-white">
+                      DTAA treaty country
+                    </label>
+                    <Select
+                      value={form.dtTaaCountry}
+                      onChange={(e) => setForm({ ...form, dtTaaCountry: e.target.value })}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  {form.countryOfTaxResidence && form.dtTaaCountry && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <div className="flex-1">
+                          <div className="text-xs font-medium text-navy-900 dark:text-white">
+                            DTAA Treaty Rate with {form.dtTaaCountry}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">
+                            Dividend: {DTAA_RATES[form.dtTaaCountry as keyof typeof DTAA_RATES]?.dividend}%&nbsp;|&nbsp;
+                            Interest: {DTAA_RATES[form.dtTaaCountry as keyof typeof DTAA_RATES]?.interest}%&nbsp;|&nbsp;
+                            Royalty: {DTAA_RATES[form.dtTaaCountry as keyof typeof DTAA_RATES]?.royalty}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
