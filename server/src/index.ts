@@ -20,11 +20,100 @@ import taxRoutes from './routes/tax';
 import savedRoutes from './routes/savedInvestments';
 import adminRoutes from './routes/admin';
 import { validateCsrfToken } from './middleware/csrf';
+import { rateLimitMiddleware } from './middleware/rateLimit';
+import { openapiSpec } from './openapi';
 
 const app = express();
 
+// ---------------------------------------------------------------------------
+// OpenAPI documentation
+// ---------------------------------------------------------------------------
+app.get('/api/docs/openapi.json', (_req: Request, res: Response) => {
+  res.json(openapiSpec);
+});
+
+app.get('/api/docs', (_req: Request, res: Response) => {
+  res.send(`
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NRI Investment Simplifier API Docs</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css" />
+    <style>
+      html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+      body, .swagger-ui * { margin: 0; padding: 0; box-sizing: border-box; }
+      .swagger-ui .topbar { display: none; }
+      .swagger-ui .info .title { font-size: 2em; font-weight: 600; color: #1a202c; }
+      .swagger-ui .info .description { color: #4a5568; font-size: 1rem; margin-bottom: 1rem; }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
+    <script>
+      const ui = SwaggerUIBundle({
+        url: '/api/docs/openapi.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [SwaggerUIBundle.presets.apis],
+        layout: 'StandaloneLayout',
+      });
+      window.ui = ui;
+    </script>
+  </body>
+</html>
+`);
+});
+
+// ---------------------------------------------------------------------------
 // Trust proxy (for rate limiting behind reverse proxies)
+// ---------------------------------------------------------------------------
 app.set('trust proxy', 1);
+
+// ---------------------------------------------------------------------------
+// Environment validation
+// ---------------------------------------------------------------------------
+function validateEnvironment(): void {
+  const required: string[] = [];
+  const warnings: string[] = [];
+
+  if (!config.jwtAccessSecret || config.jwtAccessSecret === 'dev-access-secret-change-me') {
+    required.push('JWT_ACCESS_SECRET');
+  }
+  if (!config.jwtRefreshSecret || config.jwtRefreshSecret === 'dev-refresh-secret-change-me') {
+    required.push('JWT_REFRESH_SECRET');
+  }
+  if (!config.adminPassword || config.adminPassword === 'AdminChangeMe123!') {
+    warnings.push('ADMIN_PASSWORD');
+  }
+  if (!config.sentryDsn) {
+    warnings.push('SENTRY_DSN');
+  }
+
+  // Skip required env var check in test mode
+  if (required.length > 0 && config.nodeEnv !== 'test') {
+    throw new Error(
+      `Missing required environment variables: ${required.join(', ')}`
+    );
+  }
+  if (required.length > 0) {
+    logger.warn('Missing required environment variables (test mode)', {
+      missing: required,
+    });
+  }
+
+  if (warnings.length > 0 && config.nodeEnv === 'production') {
+    throw new Error(
+      `Missing recommended production environment variables: ${warnings.join(', ')}`
+    );
+  }
+
+  if (warnings.length > 0) {
+    logger.warn('Missing optional environment variables', { missing: warnings });
+  }
+}
+
+validateEnvironment();
 
 // ---------------------------------------------------------------------------
 // Sentry initialization (must be before other middleware)
@@ -63,7 +152,7 @@ app.use(cookieParser());
 app.use(validateCsrfToken);
 
 // ---------------------------------------------------------------------------
-// Simple request logging using pino
+// Request logging using pino
 // ---------------------------------------------------------------------------
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
@@ -211,6 +300,24 @@ export function createServer(port: number = config.port) {
     const addr = server.address() as { port: number };
     logger.info('Server started', { port: addr.port, env: config.nodeEnv });
   });
+
+  // Graceful shutdown
+  const shutdownSignals: Array<NodeJS.Signals> = ['SIGINT', 'SIGTERM', 'SIGQUIT'];
+  shutdownSignals.forEach((signal) => {
+    process.on(signal, async () => {
+      logger.info(`Received ${signal}, shutting down gracefully...`);
+      try {
+        await server.close();
+        await db.$disconnect();
+        logger.info('Graceful shutdown complete');
+        process.exit(0);
+      } catch (err) {
+        logger.error('Error during graceful shutdown', { error: err });
+        process.exit(1);
+      }
+    });
+  });
+
   return server;
 }
 

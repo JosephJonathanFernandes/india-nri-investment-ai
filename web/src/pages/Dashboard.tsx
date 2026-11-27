@@ -226,7 +226,7 @@ export default function Dashboard() {
       </div>
     </div>
   );
-  );
+  }
 
   const recent = checks.slice(0, 3);
   const latestOutcome = recent[0]?.overallOutcome;
@@ -585,7 +585,9 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2 justify-between">
                   <div className="flex items-center gap-2">
                     <Bell className="w-5 h-5 text-navy-900 dark:text-white" />
-                    <h3 className="font-bold text-navy-900 dark:text-white">Regulatory updates</h3>
+                    <h3 className="font-bold text-navy-900 dark:text-white">
+                      Regulatory updates
+                    </h3>
                   </div>
                   <Button variant="ghost" size="sm" onClick={fetchChecks}>
                     <RefreshCw className="w-4 h-4" />

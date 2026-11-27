@@ -573,4 +573,149 @@ describe('API Integration', () => {
       expect(status2).toBe(404);
     });
   });
+
+  describe('Admin Endpoints', () => {
+    let adminToken: string;
+
+    beforeAll(async () => {
+      // Login as admin using seeded credentials
+      const { status, data } = await request('POST', '/api/auth/login', {
+        email: process.env.ADMIN_EMAIL ?? 'admin@nrisimplifier.local',
+        password: process.env.ADMIN_PASSWORD ?? 'AdminChangeMe123!',
+      });
+      expect(status).toBe(200);
+      adminToken = data.accessToken;
+    });
+
+    it('should reject non-admin access to admin endpoints', async () => {
+      const { status } = await request('GET', '/api/admin/rules/conflicts', undefined, authToken);
+      expect(status).toBe(403);
+    });
+
+    it('should list rule conflicts (admin)', async () => {
+      const { status, data } = await request(
+        'GET',
+        '/api/admin/rules/conflicts',
+        undefined,
+        adminToken
+      );
+      expect(status).toBe(200);
+      expect(Array.isArray(data.conflicts)).toBe(true);
+    });
+
+    it('should list expiring rules (admin)', async () => {
+      const { status, data } = await request(
+        'GET',
+        '/api/admin/rules/expiring',
+        undefined,
+        adminToken
+      );
+      expect(status).toBe(200);
+      expect(Array.isArray(data.expiringRules)).toBe(true);
+    });
+
+    it('should list unresolved checks (admin)', async () => {
+      const { status, data } = await request(
+        'GET',
+        '/api/admin/unresolved-checks',
+        undefined,
+        adminToken
+      );
+      expect(status).toBe(200);
+      expect(Array.isArray(data.unresolvedChecks)).toBe(true);
+    });
+
+    it('should list regulatory updates (admin)', async () => {
+      const { status, data } = await request(
+        'GET',
+        '/api/admin/updates',
+        undefined,
+        adminToken
+      );
+      expect(status).toBe(200);
+      expect(Array.isArray(data.updates)).toBe(true);
+    });
+
+    it('should create a regulatory update (admin)', async () => {
+      const { status, data } = await request(
+        'POST',
+        '/api/admin/updates',
+        {
+          title: 'Test Regulatory Update',
+          summary: 'This is a test regulatory update for integration testing.',
+          sourceUrl: 'https://example.com/rbi-circular',
+          isActive: true,
+        },
+        adminToken
+      );
+      expect(status).toBe(201);
+      expect(data.update.title).toBe('Test Regulatory Update');
+    });
+
+    it('should list audit logs (admin)', async () => {
+      const { status, data } = await request(
+        'GET',
+        '/api/admin/audit-logs',
+        undefined,
+        adminToken
+      );
+      expect(status).toBe(200);
+      expect(Array.isArray(data.auditLogs)).toBe(true);
+    });
+
+    it('should publish a draft rule (admin)', async () => {
+      // First, list rules to find a DRAFT rule
+      const { status: listStatus, data: listData } = await request(
+        'GET',
+        '/api/rules',
+        undefined,
+        adminToken
+      );
+      expect(listStatus).toBe(200);
+
+      const draftRule = listData.rules.find((r: any) => r.status === 'DRAFT');
+      if (draftRule) {
+        const { status, data } = await request(
+          'POST',
+          `/api/admin/rules/${draftRule.id}/publish`,
+          undefined,
+          adminToken
+        );
+        expect(status).toBe(200);
+        expect(data.rule.status).toBe('PUBLISHED');
+      } else {
+        // No draft rules; just verify the endpoint exists
+        const { status } = await request(
+          'POST',
+          '/api/admin/rules/nonexistent-id/publish',
+          undefined,
+          adminToken
+        );
+        expect(status).toBe(404);
+      }
+    });
+
+    it('should archive a rule (admin)', async () => {
+      // List rules to find one to archive
+      const { status: listStatus, data: listData } = await request(
+        'GET',
+        '/api/rules',
+        undefined,
+        adminToken
+      );
+      expect(listStatus).toBe(200);
+
+      const rule = listData.rules[0];
+      if (rule) {
+        const { status, data } = await request(
+          'POST',
+          `/api/admin/rules/${rule.id}/archive`,
+          undefined,
+          adminToken
+        );
+        expect(status).toBe(200);
+        expect(data.rule.status).toBe('ARCHIVED');
+      }
+    });
+  });
 });

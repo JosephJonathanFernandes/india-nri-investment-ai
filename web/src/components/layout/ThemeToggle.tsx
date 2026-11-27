@@ -6,7 +6,10 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const stored = localStorage.getItem('nri-theme') as 'light' | 'dark' | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const prefersDark =
+      typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : false;
     const initial = stored ?? (prefersDark ? 'dark' : 'light');
     setTheme(initial);
     document.documentElement.classList.toggle('dark', initial === 'dark');
